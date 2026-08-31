@@ -1,0 +1,72 @@
+# Configuration de déploiement Hushlab pour Render.
+#
+# Ce fichier évite de tout régler à la main dans l'interface : sur Render,
+# « New + » → « Blueprint » lit ce fichier et crée le service configuré.
+#
+# Pour passer à la formule payante quand vous brancherez votre domaine,
+# voir les deux blocs marqués « À L'ACHAT » plus bas.
+
+services:
+  - type: web
+    name: hushlab
+    runtime: python
+    plan: free              # À L'ACHAT : remplacer par « starter » (~7 $/mois)
+    region: frankfurt       # Le centre le plus proche du Maroc
+    branch: main
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 30
+
+    # Render appelle cette page pour vérifier que le site est vivant.
+    healthCheckPath: /robots.txt
+
+    # À L'ACHAT : décommenter pour conserver les demandes clients d'un
+    # déploiement à l'autre, et ajouter HUSHLAB_BASE ci-dessous.
+    # disk:
+    #   name: donnees
+    #   mountPath: /var/data
+    #   sizeGB: 1
+
+    envVars:
+      # Render génère lui-même cette clé : ni vous ni moi ne la voyons.
+      - key: HUSHLAB_SECRET_KEY
+        generateValue: true
+
+      # Un seul reverse proxy devant l'application chez Render : sans cette
+      # valeur, la limitation de débit compterait tous les visiteurs comme un.
+      - key: HUSHLAB_PROXYS
+        value: "1"
+
+      # Render sert en HTTPS : active le cookie sécurisé et l'en-tête HSTS.
+      - key: HUSHLAB_HTTPS
+        value: "1"
+
+      # Le débogueur permet d'exécuter du code à distance. Jamais en ligne.
+      - key: HUSHLAB_DEBUG
+        value: "0"
+
+      - key: PYTHON_VERSION
+        value: "3.13.5"
+
+      # « sync: false » : Render vous demande la valeur dans son interface.
+      # Ces secrets ne passent donc ni par ce fichier, ni par GitHub, ni par moi.
+      - key: HUSHLAB_ADMIN_MOTDEPASSE
+        sync: false
+
+      # Notification des demandes par email. À remplir dès le premier jour :
+      # sur la formule gratuite, c'est votre seule copie durable des demandes.
+      - key: SMTP_HOTE
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_UTILISATEUR
+        sync: false
+      - key: SMTP_MOTDEPASSE
+        sync: false
+      - key: SMTP_DESTINATAIRE
+        sync: false
+
+      # À L'ACHAT : avec le disque ci-dessus, décommenter pour que la base
+      # de données vive dessus plutôt que sur un stockage effacé à chaque mise à jour.
+      # - key: HUSHLAB_BASE
+      #   value: /var/data/hushlab.db
