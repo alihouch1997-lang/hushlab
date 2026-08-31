@@ -7,6 +7,7 @@ l'audit : ils échouent si la protection disparaît d'une révision à l'autre.
 """
 
 import os
+import pathlib
 import re
 import time
 
@@ -231,3 +232,50 @@ def test_statut_invalide_refuse_par_la_couche_donnees():
 
 def test_heure_affichee_en_heure_locale():
     assert donnees.en_heure_locale("2026-08-31T14:29:00+00:00").endswith("15:29")
+
+
+# --- Mise en ligne ----------------------------------------------------------
+
+def test_sans_proxy_declare_les_entetes_transmis_sont_ignores(client):
+    """Défaut sûr : sans proxy déclaré, X-Forwarded-For ne doit rien changer.
+
+    Sinon n'importe qui falsifierait son adresse IP et contournerait la
+    limitation de débit en changeant d'en-tête à chaque requête.
+    """
+    codes = []
+    for i in range(Config.DEMANDES_PAR_MINUTE + 2):
+        reponse = client.post("/contact", data=_demande_valide(client),
+                              headers={"X-Forwarded-For": f"10.0.0.{i}"})
+        codes.append(reponse.status_code)
+    assert 429 in codes, "une IP falsifiée a contourné la limitation de débit"
+
+
+def test_base_de_donnees_deplacable_hors_du_code():
+    """Sur un hébergeur, la base doit vivre sur un disque persistant."""
+    assert "HUSHLAB_BASE" in pathlib.Path("config.py").read_text(encoding="utf-8")
+
+
+def test_commande_de_demarrage_utilise_gunicorn():
+    """Le serveur de développement de Flask ne doit jamais servir en production."""
+    procfile = pathlib.Path("Procfile").read_text(encoding="utf-8")
+    assert procfile.startswith("web: gunicorn")
+    assert "app:app" in procfile
+
+
+def test_application_demarre_avec_un_proxy_declare(monkeypatch):
+    """Charge app.py avec HUSHLAB_PROXYS=1, le chemin réellement utilisé en ligne.
+
+    Sans ce test, une erreur dans la branche ProxyFix reste invisible :
+    tous les autres tests tournent avec la valeur par défaut, qui la contourne.
+    """
+    import importlib
+
+    import config
+    monkeypatch.setenv("HUSHLAB_PROXYS", "1")
+    importlib.reload(config)
+    assert config.Config.PROXYS_DE_CONFIANCE == 1
+    module = importlib.reload(importlib.import_module("app"))
+    assert module.app.wsgi_app.__class__.__name__ == "ProxyFix"
+    monkeypatch.delenv("HUSHLAB_PROXYS")
+    importlib.reload(config)
+    importlib.reload(module)

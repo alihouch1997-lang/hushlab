@@ -32,6 +32,13 @@ class Config:
     DEBUG = _booleen("HUSHLAB_DEBUG")
     PORT = int(os.environ.get("PORT", 5001))
 
+    # Nombre de reverse proxys devant l'application.
+    # 0 = aucun (défaut sûr). Une valeur trop élevée permettrait à n'importe
+    # qui de falsifier son adresse IP via X-Forwarded-For, et donc de
+    # contourner la limitation de débit : ne la relever qu'en connaissance
+    # de l'infrastructure réelle (1 pour Render, Railway, Fly.io).
+    PROXYS_DE_CONFIANCE = int(os.environ.get("HUSHLAB_PROXYS", 0))
+
     # --- Limites (déni de service) ----------------------------------------
     MAX_CONTENT_LENGTH = 64 * 1024          # corps de requête : 64 Ko suffisent
     LONGUEURS_MAX = {                       # par champ du formulaire

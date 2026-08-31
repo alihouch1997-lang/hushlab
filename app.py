@@ -26,6 +26,7 @@ import qrcode
 import qrcode.image.svg
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
 from markupsafe import Markup, escape
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import contenu
 import design_tokens
@@ -41,6 +42,19 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 donnees.initialiser()
+
+# Derrière un hébergeur, l'application ne voit que l'adresse du proxy : sans
+# cette correction, la limitation de débit compte tous les visiteurs comme un
+# seul, et le premier robot venu bloquerait l'accès de tout le monde.
+# Réglé par HUSHLAB_PROXYS, à 0 par défaut : on ne fait confiance aux en-têtes
+# transmis que lorsqu'un proxy est réellement là.
+if Config.PROXYS_DE_CONFIANCE:
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=Config.PROXYS_DE_CONFIANCE,
+        x_proto=Config.PROXYS_DE_CONFIANCE,
+        x_host=Config.PROXYS_DE_CONFIANCE,
+    )
 
 if not Config.SECRET_KEY_DEFINIE:
     logging.getLogger(__name__).warning(
