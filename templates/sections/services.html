@@ -3,31 +3,35 @@
 <section id="services" class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
   {{ section_heading(sections.services.title, sections.services.subtitle, sections.services.kicker) }}
 
-  <div class="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-    {% for service in services %}
-    <article id="service-{{ service.slug }}"
-             class="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-100 bg-white shadow-soft
-                    transition-all duration-200 hover:-translate-y-1 hover:shadow-lifted">
+  {# --- Le service phare occupe un bloc entier avant la grille : c'est lui
+         qui porte l'argument du sur-mesure, il ne doit pas se fondre dans
+         une carte identique aux autres. --- #}
+  {% set phare = services | selectattr("phare") | first %}
+  {% if phare %}
+  <article id="service-{{ phare.slug }}"
+           class="group mt-16 overflow-hidden rounded-2xl border border-indigo-200 bg-white shadow-lifted">
+    <div class="grid lg:grid-cols-2">
 
-      <div class="relative aspect-[16/10] overflow-hidden">
-        {{ photo(service.image, service.image_alt,
-                 "h-full w-full object-cover transition-transform duration-500 group-hover:scale-105",
-                 960, 600) }}
-        {# Voile dégradé : garantit le contraste de la pastille quelle que soit la photo. #}
-        <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/45 via-transparent to-transparent"></div>
-        <span class="absolute bottom-4 left-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white/95 text-indigo-600 shadow-soft">
-          {{ icon(service.icon, "h-5 w-5") }}
+      <div class="relative aspect-[16/10] overflow-hidden lg:aspect-auto lg:min-h-[26rem]">
+        {{ photo(phare.image, phare.image_alt,
+                 "h-full w-full object-cover transition-transform duration-700 group-hover:scale-105",
+                 960, 640) }}
+        <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/55 via-indigo-950/10 to-transparent"></div>
+        <span class="absolute bottom-6 left-6 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-soft">
+          {{ icon(phare.icon, "h-4 w-4") }} {{ phare.eyebrow }}
         </span>
       </div>
 
-      <div class="flex flex-1 flex-col p-6">
-        <h3 class="text-lg font-bold leading-snug text-ink">{{ service.title }}</h3>
-        <p class="mt-3 text-sm leading-relaxed text-muted">{{ service.body }}</p>
+      <div class="flex flex-col justify-center p-8 sm:p-10">
+        <h3 class="text-2xl font-bold leading-display tracking-tightest text-ink sm:text-3xl">
+          {{ phare.title }}
+        </h3>
+        <p class="mt-5 leading-relaxed text-muted">{{ phare.body }}</p>
 
-        <ul class="mt-5 flex-1 space-y-2.5 border-t border-slate-100 pt-5">
-          {% for point in service.bullets %}
+        <ul class="mt-7 grid gap-3 sm:grid-cols-2">
+          {% for point in phare.bullets %}
           <li class="flex items-start gap-3 text-sm text-slate-700">
-            <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
               {{ icon("check", "h-3 w-3") }}
             </span>
             <span>{{ point }}</span>
@@ -35,14 +39,97 @@
           {% endfor %}
         </ul>
 
+        {% if phare.argument %}
+        <p class="mt-7 border-l-2 border-indigo-600 bg-indigo-50/60 py-4 pl-5 pr-4 text-sm leading-relaxed text-indigo-950">
+          {{ phare.argument }}
+        </p>
+        {% endif %}
+
         <a href="#contact"
-           class="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-800
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
-          Demander un devis
-          <span class="transition-transform duration-200 group-hover:translate-x-1">{{ icon("arrow-right", "h-4 w-4") }}</span>
+           class="group/lien mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600
+                  px-6 py-3 text-sm font-semibold text-white shadow-button transition-all duration-200
+                  hover:-translate-y-0.5 hover:shadow-lifted focus-visible:outline-none focus-visible:ring-2
+                  focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+          Faire chiffrer mon outil
+          <span class="transition-transform duration-200 group-hover/lien:translate-x-1">{{ icon("arrow-right", "h-4 w-4") }}</span>
         </a>
       </div>
-    </article>
+    </div>
+  </article>
+  {% endif %}
+
+  {# --- Les autres services, regroupés par moment de la vie de l'entreprise --- #}
+  {% for pole in poles %}
+  {% set du_pole = services | rejectattr("phare", "defined") | selectattr("pole", "equalto", pole.cle) | list %}
+  {% if du_pole %}
+  <div class="mt-20">
+    <div class="flex flex-col gap-2 border-b border-slate-200 pb-5 sm:flex-row sm:items-baseline sm:justify-between">
+      <h3 class="text-xl font-bold tracking-tightest text-ink">{{ pole.titre }}</h3>
+      <p class="text-sm text-muted sm:text-right">{{ pole.chapeau }}</p>
+    </div>
+
+    <div class="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {% for service in du_pole %}
+      <article id="service-{{ service.slug }}"
+               class="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-100 bg-white shadow-soft
+                      transition-all duration-200 hover:-translate-y-1 hover:shadow-lifted">
+
+        <div class="relative aspect-[16/10] overflow-hidden">
+          {{ photo(service.image, service.image_alt,
+                   "h-full w-full object-cover transition-transform duration-500 group-hover:scale-105",
+                   960, 600) }}
+          <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/45 via-transparent to-transparent"></div>
+          <span class="absolute bottom-4 left-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white/95 text-indigo-600 shadow-soft">
+            {{ icon(service.icon, "h-5 w-5") }}
+          </span>
+        </div>
+
+        <div class="flex flex-1 flex-col p-6">
+          <h4 class="text-lg font-bold leading-snug text-ink">{{ service.title }}</h4>
+          <p class="mt-3 text-sm leading-relaxed text-muted">{{ service.body }}</p>
+
+          <ul class="mt-5 flex-1 space-y-2.5 border-t border-slate-100 pt-5">
+            {% for point in service.bullets %}
+            <li class="flex items-start gap-3 text-sm text-slate-700">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                {{ icon("check", "h-3 w-3") }}
+              </span>
+              <span>{{ point }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+
+          <a href="#contact"
+             class="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-800
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            Demander un devis
+            <span class="transition-transform duration-200 group-hover:translate-x-1">{{ icon("arrow-right", "h-4 w-4") }}</span>
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    {# --- Les exemples d'automatisation méritent d'être montrés : « automatiser »
+           reste abstrait tant qu'on ne voit pas ce que ça remplace. --- #}
+    {% for service in du_pole if service.exemples %}
+    <div class="mt-8 rounded-xl border border-slate-100 bg-white p-6 shadow-soft sm:p-8">
+      <p class="text-sm font-semibold uppercase tracking-widest text-indigo-600">
+        Ce qu'on automatise, concrètement
+      </p>
+      <div class="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+        {% for exemple in service.exemples %}
+        <div>
+          <p class="flex items-center gap-2 text-sm font-semibold text-ink">
+            <span class="text-indigo-600">{{ icon(exemple[0], "h-4 w-4") }}</span>{{ exemple[1] }}
+          </p>
+          <p class="mt-1.5 text-sm leading-relaxed text-muted">{{ exemple[2] }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
     {% endfor %}
   </div>
+  {% endif %}
+  {% endfor %}
 </section>

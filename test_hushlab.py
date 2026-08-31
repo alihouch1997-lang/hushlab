@@ -279,3 +279,16 @@ def test_application_demarre_avec_un_proxy_declare(monkeypatch):
     monkeypatch.delenv("HUSHLAB_PROXYS")
     importlib.reload(config)
     importlib.reload(module)
+
+
+def test_fichiers_statiques_versionnes(client):
+    """Le cache long n'est acceptable que si l'URL change quand le fichier change.
+
+    Sans ce marqueur, un visiteur déjà venu garderait l'ancien CSS pendant
+    trente jours après une mise à jour du site.
+    """
+    page = client.get("/").data.decode()
+    assert re.search(r'/static/css/app\.css\?v=\d+', page), \
+        "le CSS est servi sans marqueur de version"
+    assert re.search(r'/static/img/[^"]+\?v=\d+', page), \
+        "les images sont servies sans marqueur de version"

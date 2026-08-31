@@ -11,7 +11,7 @@ flux RSS, export, version arabe à venir).
 
 SITE = {
     "name": "Hushlab",
-    "baseline": "Vos projets avancent, on s'occupe du reste.",
+    "baseline": "Vos outils, taillés pour votre entreprise.",
     "founder": "Ali Houch",
     "founder_role": "Fondateur",
     "founder_initials": "AH",
@@ -35,132 +35,216 @@ NAV = [
 ]
 
 HERO = {
-    "badge": "NOUVEAU",
-    "badge_text": "Hushlab accompagne les entreprises à Rabat",
+    "badge": "SUR MESURE",
+    "badge_text": "Atelier numérique à Rabat",
     # Le titre est coupé en deux : la seconde moitié reçoit le dégradé.
-    "title_plain": "Vos projets avancent,",
-    "title_gradient": "on s'occupe du reste",
+    "title_plain": "Le sur-mesure n'est plus",
+    "title_gradient": "réservé aux grandes maisons.",
     "body": (
-        "Sites web, QR et NFC, réseaux sociaux, intelligence artificielle, "
-        "création d'entreprise de A à Z. Un seul interlocuteur pour des "
-        "métiers que vous confiez d'habitude à quatre prestataires."
+        "Vos outils de gestion, votre site, vos avis clients, vos automatisations : "
+        "façonnés pour votre entreprise, pas loués par abonnement. Vous les possédez."
     ),
     "primary_cta": "Parler de mon projet",
-    "secondary_cta": "Voir les services",
-    "proof": "Premier échange gratuit · Réponse sous 24 h · Basés à Rabat",
+    "secondary_cta": "Voir le savoir-faire",
+    "proof": "Premier échange offert · Réponse sous 24 h · Rabat",
     "image": "hero-equipe.jpg",
     "image_alt": "Une équipe réunie autour d'une table de travail",
 }
 
 ENGAGEMENTS = [
-    {"value": "6", "label": "domaines couverts"},
-    {"value": "A → Z", "label": "juridique et administratif"},
+    {"value": "7", "label": "métiers réunis"},
+    {"value": "0", "label": "abonnement à vie"},
     {"value": "24 h", "label": "pour vous répondre"},
     {"value": "Rabat", "label": "et partout au Maroc"},
 ]
 
+# Les services sont regroupés par moment de la vie de l'entreprise plutôt
+# qu'en liste plate : le visiteur se reconnaît dans une étape et va droit à
+# ce qui le concerne. L'ordre des pôles est celui de la page.
+POLES = [
+    {"cle": "demarrer", "titre": "Démarrer",
+     "chapeau": "Faire exister l'entreprise, et la rendre capable de facturer."},
+    {"cle": "etre-trouve", "titre": "Être trouvé",
+     "chapeau": "Exister là où vos clients vous cherchent, et leur donner envie d'entrer."},
+    {"cle": "gagner-du-temps", "titre": "Gagner du temps",
+     "chapeau": "Rendre à vos équipes les heures que la routine leur prend."},
+]
+
 SERVICES = [
+    # --- Pôle : gérer · le service phare, présenté à part sur la page ---------
     {
-        "slug": "sites-web",
-        "icon": "globe",
-        "title": "Création de sites web",
+        "slug": "gestion",
+        "pole": "gerer",
+        "phare": True,
+        "icon": "layout-dashboard",
+        "eyebrow": "Le sur-mesure",
+        "title": "Votre logiciel de gestion, taillé pour vous",
         "body": (
-            "Un site qui dit clairement ce que vous faites et qui donne envie "
-            "de vous contacter. Pages d'accueil, pages de services, site vitrine complet."
+            "Devis, factures, bons de livraison, suivi des clients, états de TVA : "
+            "nous façonnons l'outil dont votre entreprise a besoin. Le vôtre, pas un "
+            "logiciel générique dont vous n'utiliserez jamais neuf fonctions sur dix. "
+            "Bâti en logiciel libre : il vous appartient, et aucune licence ne court chaque mois."
         ),
         "bullets": [
-            "Site vitrine et pages de services",
-            "Rédaction et mise en page des contenus",
-            "Affichage soigné sur mobile",
-            "Nom de domaine et mise en ligne",
+            "Devis, factures et bons de livraison à votre en-tête",
+            "Suivi des clients, des règlements et des impayés",
+            "États de TVA et exports prêts pour votre comptable",
+            "Tableaux de bord adaptés à votre activité, pas à celle du voisin",
+            "Aucun abonnement, aucun coût par utilisateur ajouté",
         ],
-        "image": "service-sites-web.jpg",
-        "image_alt": "Ordinateur portable affichant un tableau de bord",
+        # NOTE À COMPLÉTER : relevez les tarifs réels de deux ou trois solutions
+        # que vos prospects connaissent, convertissez en dirhams, et datez la
+        # comparaison. Un chiffre faux se retourne contre vous.
+        "argument": (
+            "Un logiciel du marché se loue par utilisateur et par mois, indéfiniment. "
+            "Un outil taillé pour vous se paie une fois, et reste à vous."
+        ),
+        "image": "service-gestion.jpg",
+        "image_alt": "Tableau de bord de gestion affiché sur un ordinateur portable",
     },
+
+    # --- Pôle : démarrer ------------------------------------------------------
     {
-        "slug": "qr-nfc",
-        "icon": "qr-code",
-        "title": "QR codes et supports NFC",
+        "slug": "creation-entreprise",
+        "pole": "demarrer",
+        "icon": "building-2",
+        "title": "Votre société, prête à facturer",
         "body": (
-            "Un support à scanner qui envoie vos clients au bon endroit : "
-            "avis Google, Instagram, Facebook, menu du jour ou page de contact."
+            "Statuts, immatriculation, démarches fiscales et sociales : vous signez, "
+            "nous portons le dossier jusqu'au bout. Vous ressortez avec une société qui "
+            "existe et la capacité d'émettre votre première facture."
         ),
         "bullets": [
-            "Avis Google, Instagram, Facebook",
-            "Menus modifiables sans réimpression",
-            "Cartes et supports NFC à poser sur table",
-            "Pages d'accueil et de contact dédiées",
+            "Forme juridique choisie selon votre activité réelle",
+            "Rédaction et dépôt des statuts",
+            "Immatriculation et enregistrements",
+            "Premières démarches fiscales et sociales accompagnées",
+        ],
+        "image": "service-creation-entreprise.jpg",
+        "image_alt": "Document de plan d'affaires posé sur un bureau",
+    },
+
+    # --- Pôle : être trouvé ---------------------------------------------------
+    {
+        "slug": "avis-nfc",
+        "pole": "etre-trouve",
+        "icon": "qr-code",
+        "title": "Vos avis Google, en pilote automatique",
+        "body": (
+            "Un seul support posé sur le comptoir, qui fonctionne au scan comme au "
+            "contact : votre client laisse son avis en trois secondes. Vous voyez "
+            "combien de personnes l'utilisent, et les réponses partent toutes seules, "
+            "dans votre ton."
+        ),
+        "bullets": [
+            "NFC et QR sur le même support : carte, plaque, chevalet",
+            "Avis Google, page Instagram, page Facebook",
+            "Réponse automatique aux avis, écrite dans votre style",
+            "Suivi des scans : vous savez quel support travaille",
+            "Menu, WiFi, contact, catalogue : destination modifiable sans réimprimer",
         ],
         "image": "service-qr-nfc.jpg",
         "image_alt": "Main tenant un smartphone",
     },
     {
-        "slug": "reseaux-sociaux",
-        "icon": "megaphone",
-        "title": "Gestion des réseaux sociaux",
+        "slug": "site-web",
+        "pole": "etre-trouve",
+        "icon": "globe",
+        "title": "Un site qui fait venir des clients",
         "body": (
-            "Votre page reste vivante même les semaines où vous n'avez pas le "
-            "temps : publications régulières, visuels cohérents, messages traités."
+            "Site vitrine, pages de services, menu en ligne : un site qui dit clairement "
+            "ce que vous faites et donne envie de vous appeler. Pensé d'abord pour le "
+            "téléphone, là où vos clients vous cherchent vraiment."
         ),
         "bullets": [
-            "Calendrier de publication",
+            "Site vitrine et pages de services",
+            "Rédaction et mise en page des contenus",
+            "Affichage soigné sur mobile",
+            "Nom de domaine, hébergement et mise en ligne",
+            "Fiche Google : adresse, horaires, itinéraire",
+        ],
+        "image": "service-site-web.jpg",
+        "image_alt": "Site web affiché sur un écran dans un bureau sombre",
+    },
+    {
+        "slug": "reseaux-sociaux",
+        "pole": "etre-trouve",
+        "icon": "megaphone",
+        "title": "Une page qui reste vivante",
+        "body": (
+            "Publications régulières, visuels cohérents, messages traités : votre page "
+            "continue de travailler les semaines où vous n'avez pas une minute à lui "
+            "consacrer."
+        ),
+        "bullets": [
+            "Calendrier de publication tenu",
             "Création des visuels et des textes",
-            "Réponses aux messages et commentaires",
+            "Réponses aux messages et aux commentaires",
             "Point mensuel sur ce qui a marché",
         ],
         "image": "service-reseaux-sociaux.jpg",
         "image_alt": "Icônes d'applications sur un écran de smartphone",
     },
+
+    # --- Pôle : gagner du temps -----------------------------------------------
     {
-        "slug": "intelligence-artificielle",
-        "icon": "sparkles",
-        "title": "Accompagnement à l'intelligence artificielle",
+        "slug": "automatisation",
+        "pole": "gagner-du-temps",
+        "icon": "workflow",
+        "title": "Les tâches répétitives, faites sans vous",
         "body": (
-            "On repère les tâches où l'IA vous fait vraiment gagner du temps, "
-            "on met les outils en place, et on reste le temps que ça devienne un réflexe."
+            "Nous relions vos outils entre eux et confions à la machine ce que vous "
+            "refaites chaque semaine : répondre, relancer, saisir, transmettre. Chaque "
+            "automatisation est construite pour votre métier, pas achetée sur étagère."
         ),
         "bullets": [
-            "Repérage des tâches répétitives",
-            "Choix et mise en place des outils",
-            "Modèles prêts à l'emploi pour votre métier",
-            "Accompagnement dans la durée",
+            "Réponse aux messages WhatsApp hors horaires",
+            "Relance des impayés à J+7, J+15 et J+30",
+            "Devis envoyé dans la minute après un formulaire",
+            "Facture fournisseur photographiée, ligne comptable créée",
+            "Récapitulatif du chiffre d'affaires chaque lundi matin",
         ],
-        "image": "service-ia.jpg",
-        "image_alt": "Illustration lumineuse d'un cerveau",
+        # Exemples détaillés, affichés en grille sous le service.
+        "exemples": [
+            ("message-circle", "WhatsApp hors horaires",
+             "Réponse immédiate la nuit et le week-end, transfert des demandes sérieuses à l'ouverture."),
+            ("bell", "Relance des impayés",
+             "Rappel automatique à J+7, J+15 et J+30. Vous n'y pensez plus, l'argent rentre."),
+            ("send", "Devis instantané",
+             "Un client remplit le formulaire, le devis part dans la minute à votre en-tête."),
+            ("file-text", "Facture photographiée",
+             "Une photo de la facture fournisseur, et la ligne comptable est créée."),
+            ("calendar", "Rappel de rendez-vous",
+             "Message la veille. Moins de créneaux perdus pour les cabinets et les salons."),
+            ("trending-up", "Récapitulatif du lundi",
+             "Chiffre d'affaires, encaissements et impayés de la semaine, dans votre boîte mail."),
+            ("info", "Alerte encours client",
+             "Vous êtes prévenu avant de livrer un client qui dépasse son plafond."),
+            ("refresh-cw", "Stock synchronisé",
+             "Le site, la caisse et le stock affichent le même chiffre, sans intervention."),
+        ],
+        "image": "service-automatisation.jpg",
+        "image_alt": "Code affiché sur un écran",
     },
     {
         "slug": "formations",
+        "pole": "gagner-du-temps",
         "icon": "graduation-cap",
-        "title": "Formations IA pour comptables et gestionnaires",
+        "title": "L'IA au service de votre cabinet",
         "body": (
-            "Des sessions concrètes, construites sur vos dossiers réels plutôt "
-            "que sur des exemples théoriques. Saisie, relances, reporting, courriers."
+            "Des sessions bâties sur vos propres dossiers, pas sur des exemples "
+            "théoriques. Vos équipes repartent en sachant faire, sur les tâches qui leur "
+            "prennent le plus de temps : courriers, relances, résumés de pièces."
         ),
         "bullets": [
-            "En présentiel ou à distance",
-            "Cas pratiques tirés de vos propres dossiers",
-            "Supports à garder après la session",
+            "En présentiel à Rabat ou à distance",
+            "Cas pratiques tirés de vos dossiers réels",
+            "Modèles prêts à l'emploi, à garder après la session",
+            "La règle de confidentialité posée par écrit",
             "Aucun prérequis technique",
         ],
-        "image": "service-formation.jpg",
-        "image_alt": "Mains sur une calculatrice à côté d'un ordinateur portable",
-    },
-    {
-        "slug": "creation-entreprise",
-        "icon": "building-2",
-        "title": "Création d'entreprise de A à Z",
-        "body": (
-            "Vous décidez de vous lancer, on prend en charge le parcours "
-            "juridique et administratif jusqu'à ce que la société existe."
-        ),
-        "bullets": [
-            "Choix de la forme juridique",
-            "Rédaction et dépôt des statuts",
-            "Immatriculation et enregistrements",
-            "Démarches administratives et fiscales",
-        ],
-        "image": "service-creation-entreprise.jpg",
-        "image_alt": "Document de plan d'affaires posé sur un bureau",
+        "image": "service-ia.jpg",
+        "image_alt": "Illustration lumineuse d'un cerveau",
     },
 ]
 
@@ -209,7 +293,7 @@ OFFRES = [
         "name": "Présence",
         "price": "Sur devis",
         "period": "forfait unique",
-        "pitch": "Pour exister en ligne proprement, sans tout construire d'un coup.",
+        "pitch": "Exister en ligne proprement, sans tout construire d'un coup.",
         "features": [
             "Site vitrine ou page de services",
             "QR code avis Google",
@@ -220,14 +304,14 @@ OFFRES = [
         "featured": False,
     },
     {
-        "name": "Visibilité",
+        "name": "Atelier",
         "price": "Sur devis",
         "period": "forfait + suivi mensuel",
-        "pitch": "Le site, les supports à scanner et les réseaux, gérés ensemble.",
+        "pitch": "Votre outil de gestion sur mesure, et tout ce qui l'entoure.",
         "features": [
             "Tout ce que comprend Présence",
-            "Gestion des réseaux sociaux",
-            "Supports QR et NFC pour vos avis et menus",
+            "Votre logiciel de gestion, taillé pour vous",
+            "Supports NFC et QR pour vos avis et menus",
             "Point mensuel et ajustements",
         ],
         "cta": "Demander un devis",
@@ -414,11 +498,11 @@ CONTACTS = [
 ]
 
 META_DEFAUT = {
-    "titre": f"{SITE['name']} — {SITE['baseline']}",
+    "titre": f"{SITE['name']} — Outils de gestion sur mesure à Rabat",
     "description": (
-        "Hushlab accompagne les entreprises à Rabat : création de sites web, QR codes "
-        "et NFC pour vos avis et menus, gestion des réseaux sociaux, intelligence "
-        "artificielle et création d'entreprise de A à Z."
+        "Hushlab façonne à Rabat les outils sur mesure des TPE et PME : logiciel de "
+        "gestion sans abonnement, site web, avis Google, supports NFC, automatisations, "
+        "formations IA et création de société."
     ),
     "image": "img/og.jpg",
     "type": "website",
@@ -426,10 +510,10 @@ META_DEFAUT = {
 
 SECTIONS = {
     "services": {
-        "kicker": "Services",
-        "title": "Six métiers, un seul interlocuteur",
+        "kicker": "Savoir-faire",
+        "title": "Sept métiers, un seul atelier",
         "subtitle": "Vous n'avez plus à coordonner un développeur, une agence de communication, "
-                    "un formateur et un juriste. Tout passe par le même contact.",
+                    "un formateur et un juriste. Un seul interlocuteur, une seule proposition.",
     },
     "methode": {
         "kicker": "Méthode",
@@ -461,7 +545,7 @@ SECTIONS = {
                     "Le premier échange est gratuit et sans engagement.",
     },
     "cta": {
-        "title": "Un projet en tête ? Le premier échange est gratuit",
+        "title": "Parlons de ce que votre entreprise mérite",
         "subtitle": "Dites-nous où vous en êtes. Vous repartez avec un avis franc et, si le "
                     "projet tient la route, une proposition écrite.",
         "primary": "Écrire à Hushlab",
@@ -473,10 +557,10 @@ FOOTER_COLUMNS = [
     {
         "title": "Services",
         "links": [
-            {"label": "Création de sites web", "endpoint": "accueil", "anchor": "services"},
-            {"label": "QR codes et NFC", "endpoint": "accueil", "anchor": "services"},
-            {"label": "Réseaux sociaux", "endpoint": "accueil", "anchor": "services"},
-            {"label": "Création d'entreprise", "endpoint": "accueil", "anchor": "services"},
+            {"label": "Logiciel de gestion", "endpoint": "accueil", "anchor": "services"},
+            {"label": "Avis Google et NFC", "endpoint": "accueil", "anchor": "services"},
+            {"label": "Site web et réseaux", "endpoint": "accueil", "anchor": "services"},
+            {"label": "Création de société", "endpoint": "accueil", "anchor": "services"},
         ],
     },
     {
@@ -528,3 +612,51 @@ SOCIALS = [
     {"label": "Téléphone", "icon": "phone", "href": f"tel:{SITE['phone_link']}"},
     {"label": "Email", "icon": "mail", "href": f"mailto:{SITE['email']}"},
 ]
+
+
+# --------------------------------------------------------------------------- #
+# Typographie française
+# --------------------------------------------------------------------------- #
+
+# En français, les deux-points, points-virgules, points d'exclamation et
+# d'interrogation prennent une espace fine insécable devant. Sans elle, la
+# ponctuation se retrouve seule en début de ligne au moment du retour à la
+# ligne — ce qui trahit immédiatement un texte mal composé.
+_FINE = "\u202f"
+_REGLES = {
+    " :": _FINE + ":", " ;": _FINE + ";",
+    " !": _FINE + "!", " ?": _FINE + "?",
+    "« ": "«" + _FINE, " »": _FINE + "»",
+}
+
+
+def _composer(valeur):
+    """Applique les règles à toute chaîne d'un contenu, aussi imbriquée soit-elle.
+
+    Ne s'applique qu'aux données éditoriales : ni aux URL, ni aux classes CSS,
+    ni aux identifiants, qui ne contiennent jamais ces motifs.
+    """
+    if isinstance(valeur, str):
+        for avant, apres in _REGLES.items():
+            valeur = valeur.replace(avant, apres)
+        return valeur
+    if isinstance(valeur, dict):
+        return {cle: _composer(v) for cle, v in valeur.items()}
+    if isinstance(valeur, list):
+        return [_composer(v) for v in valeur]
+    if isinstance(valeur, tuple):
+        return tuple(_composer(v) for v in valeur)
+    return valeur
+
+
+SITE = _composer(SITE)
+HERO = _composer(HERO)
+SERVICES = _composer(SERVICES)
+METHODE = _composer(METHODE)
+FONDATEUR = _composer(FONDATEUR)
+OFFRES = _composer(OFFRES)
+OFFRES_NOTE = _composer(OFFRES_NOTE)
+ARTICLES = _composer(ARTICLES)
+FAQ = _composer(FAQ)
+SECTIONS = _composer(SECTIONS)
+POLES = _composer(POLES)

@@ -16,6 +16,7 @@ En production, servir `app` derrière gunicorn ou waitress — jamais avec le
 serveur de développement de Flask.
 """
 
+import contextlib
 import io
 import json
 import logging
@@ -72,6 +73,23 @@ SLUGS_SERVICES = {service["slug"] for service in contenu.SERVICES}
 @app.after_request
 def _securiser(reponse: Response) -> Response:
     return securite.poser_entetes(reponse)
+
+
+@app.url_defaults
+def _versionner_statique(endpoint: str, valeurs: dict) -> None:
+    """Ajoute la date de modification du fichier à chaque URL de static/.
+
+    Sans cela, le cache de 30 jours posé plus haut se retourne contre nous :
+    un visiteur déjà venu garderait l'ancien CSS et l'ancien logo après une
+    mise à jour du site, parfois pendant un mois. En changeant l'URL dès que
+    le fichier change, on obtient le meilleur des deux : cache long pour ce
+    qui ne bouge pas, rechargement immédiat pour ce qui bouge.
+    """
+    if endpoint != "static" or "filename" not in valeurs:
+        return
+    fichier = pathlib.Path(app.static_folder) / valeurs["filename"]
+    with contextlib.suppress(OSError):     # fichier absent : on sert sans marqueur
+        valeurs["v"] = int(fichier.stat().st_mtime)
 
 
 # --------------------------------------------------------------------------- #
@@ -309,6 +327,7 @@ def _accueil(**extra):
         hero=contenu.HERO,
         engagements=contenu.ENGAGEMENTS,
         services=contenu.SERVICES,
+        poles=contenu.POLES,
         methode=contenu.METHODE,
         fondateur=contenu.FONDATEUR,
         offres=contenu.OFFRES,
