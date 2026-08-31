@@ -80,3 +80,24 @@ def valider_demande(formulaire, services_connus: set[str]) -> tuple[dict, dict]:
         champs["service"] = ""
 
     return champs, erreurs
+
+
+# Excel, LibreOffice et Google Sheets interprètent toute cellule commençant
+# par l'un de ces caractères comme une formule. Un visiteur qui saisit
+# « =cmd|'/c calc'!A1 » comme nom obtient l'exécution d'une commande sur le
+# poste de la personne qui ouvre l'export. Le tabulateur et le retour chariot
+# sont inclus : ils permettent de décaler le contenu vers une cellule voisine.
+AMORCES_DE_FORMULE = ("=", "+", "-", "@", "\t", "\r")
+
+
+def cellule_csv_sure(valeur) -> str:
+    """Neutralise une valeur avant de l'écrire dans un export tableur.
+
+    L'apostrophe en tête force le tableur à traiter la cellule comme du texte.
+    Elle reste visible à la lecture, ce qui est le comportement souhaité : on
+    veut voir qu'une saisie était anormale.
+    """
+    texte = "" if valeur is None else str(valeur)
+    if texte.startswith(AMORCES_DE_FORMULE):
+        return "'" + texte
+    return texte

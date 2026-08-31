@@ -16,6 +16,7 @@ from collections.abc import Iterator
 from contextlib import closing, contextmanager
 from datetime import UTC, datetime, timedelta, timezone
 
+import validation
 from config import Config
 
 # Le Maroc est à UTC+1 toute l'année : on stocke en UTC, on affiche en local.
@@ -130,7 +131,7 @@ def changer_statut(identifiant: int, statut: str) -> bool:
         return curseur.rowcount > 0
 
 
-def tableau_de_bord(limite: int = 50) -> dict:
+def tableau_de_bord(limite: int = 25, decalage: int = 0) -> dict:
     """Tout ce qu'affiche l'administration, en **une seule** connexion.
 
     Trois appels séparés ouvraient trois connexions par affichage de page ;
@@ -139,13 +140,23 @@ def tableau_de_bord(limite: int = 50) -> dict:
     """
     with connexion() as cx:
         demandes = cx.execute(
-            "SELECT * FROM demandes ORDER BY id DESC LIMIT ?", (limite,)).fetchall()
+            "SELECT * FROM demandes ORDER BY id DESC LIMIT ? OFFSET ?",
+            (limite, decalage)).fetchall()
         compteurs = {ligne["statut"]: ligne["n"] for ligne in cx.execute(
             "SELECT statut, COUNT(*) AS n FROM demandes GROUP BY statut")}
         scans = {ligne["code"]: ligne["n"] for ligne in cx.execute(
             "SELECT code, COUNT(*) AS n FROM scans GROUP BY code")}
     compteurs["total"] = sum(compteurs.values())
-    return {"demandes": demandes, "compteurs": compteurs, "scans": scans}
+    return {
+        "demandes": demandes,
+        "compteurs": compteurs,
+        "scans": scans,
+        "decalage": decalage,
+        "limite": limite,
+        # De quoi construire la navigation sans deuxième requête.
+        "reste_avant": decalage > 0,
+        "reste_apres": decalage + len(demandes) < compteurs["total"],
+    }
 
 
 def exporter_csv() -> str:
@@ -157,7 +168,9 @@ def exporter_csv() -> str:
     plume.writerow(colonnes)
     with connexion() as cx:
         for ligne in cx.execute("SELECT * FROM demandes ORDER BY id DESC"):
-            plume.writerow([ligne[colonne] for colonne in colonnes])
+            # Chaque cellule est neutralisée : un nom saisi par un visiteur ne
+            # doit jamais pouvoir s'exécuter à l'ouverture du fichier.
+            plume.writerow([validation.cellule_csv_sure(ligne[c]) for c in colonnes])
     return tampon.getvalue()
 
 

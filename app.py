@@ -70,6 +70,11 @@ ICONES: dict[str, str] = json.loads(
 SLUGS_SERVICES = {service["slug"] for service in contenu.SERVICES}
 
 
+@app.before_request
+def _controler_le_domaine() -> None:
+    securite.verifier_hote()
+
+
 @app.after_request
 def _securiser(reponse: Response) -> Response:
     return securite.poser_entetes(reponse)
@@ -87,9 +92,24 @@ def _versionner_statique(endpoint: str, valeurs: dict) -> None:
     """
     if endpoint != "static" or "filename" not in valeurs:
         return
-    fichier = pathlib.Path(app.static_folder) / valeurs["filename"]
-    with contextlib.suppress(OSError):     # fichier absent : on sert sans marqueur
-        valeurs["v"] = int(fichier.stat().st_mtime)
+    version = _version_fichier(valeurs["filename"])
+    if version:
+        valeurs["v"] = version
+
+
+@lru_cache(maxsize=256)
+def _version_fichier(nom: str) -> int | None:
+    """Date de modification d'un fichier de static/, lue une seule fois.
+
+    Sans mémorisation, rendre la page d'accueil coûtait trente appels système
+    — un par URL de fichier. Les fichiers de static/ sont produits par
+    build.py : ils ne changent jamais pendant l'exécution, seulement au
+    redémarrage qui suit un déploiement.
+    """
+    fichier = pathlib.Path(app.static_folder) / nom
+    with contextlib.suppress(OSError):     # fichier absent : servi sans marqueur
+        return int(fichier.stat().st_mtime)
+    return None
 
 
 # --------------------------------------------------------------------------- #
@@ -321,7 +341,6 @@ def _contexte_global() -> dict:
 
 def _accueil(**extra):
     """Rend la page d'accueil ; `extra` transporte l'état du formulaire."""
-    import time
     return render_template(
         "index.html",
         hero=contenu.HERO,
@@ -337,7 +356,6 @@ def _accueil(**extra):
         faq=contenu.FAQ,
         contacts=contenu.CONTACTS,
         qr_codes=contenu.QR_CODES,
-        horodatage=int(time.time()),
         **extra,
     )
 
@@ -420,17 +438,16 @@ def contact():
     Trois barrières successives : jeton CSRF, limitation de débit par IP,
     puis piège à robots (champ leurre et délai minimal de remplissage).
     """
-    securite.verifier_csrf()
+    # Le délai minimal de remplissage est lu dans l'horodatage signé du jeton :
+    # contrairement à l'ancien champ caché, un robot ne peut pas le reculer.
+    securite.verifier_csrf(delai_minimum=Config.DELAI_MINIMUM_FORMULAIRE)
 
     if securite.trop_de_requetes("contact", Config.DEMANDES_PAR_MINUTE):
         abort(429, description="Trop de demandes envoyées. Réessayez dans une minute.")
 
-    # Leurre rempli, ou formulaire renvoyé en moins de deux secondes : on
-    # répond comme si tout allait bien, sans rien enregistrer.
-    import time
-    depart = request.form.get("horodatage", "0")
-    trop_rapide = not depart.isdigit() or time.time() - int(depart) < 2
-    if request.form.get("site_web") or trop_rapide:
+    # Champ leurre : invisible pour un humain, rempli par les robots. On répond
+    # comme si tout allait bien, sans rien enregistrer.
+    if request.form.get("site_web"):
         app.logger.info("Envoi automatisé ignoré")
         return redirect(url_for("accueil", envoye=1) + "#contact")
 
@@ -488,12 +505,17 @@ def robots():
 @app.route("/admin")
 @securite.protege
 def admin():
-    tableau = donnees.tableau_de_bord()
+    par_page = 25
+    page = max(1, request.args.get("page", 1, type=int))
+    tableau = donnees.tableau_de_bord(limite=par_page, decalage=(page - 1) * par_page)
     return render_template(
         "admin.html",
         demandes=tableau["demandes"],
         compteurs=tableau["compteurs"],
         scans=tableau["scans"],
+        page=page,
+        reste_avant=tableau["reste_avant"],
+        reste_apres=tableau["reste_apres"],
         qr_codes=contenu.QR_CODES,
         libelles_services={s["slug"]: s["title"] for s in contenu.SERVICES},
         smtp_actif=Config.smtp_configure(),
@@ -503,7 +525,7 @@ def admin():
 @app.route("/admin/demande/<int:identifiant>/<statut>", methods=["POST"])
 @securite.protege
 def admin_statut(identifiant: int, statut: str):
-    securite.verifier_csrf()
+    securite.verifier_csrf("admin")
     if statut not in {"nouveau", "traite"}:
         abort(400, description="Statut inconnu.")
     if not donnees.changer_statut(identifiant, statut):

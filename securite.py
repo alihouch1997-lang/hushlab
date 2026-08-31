@@ -13,6 +13,7 @@ avec formulaire et écran d'administration :
 import secrets
 import time
 from collections import defaultdict, deque
+from datetime import UTC, datetime
 from functools import wraps
 
 from flask import Response, abort, g, render_template, request
@@ -68,23 +69,36 @@ def trop_de_requetes(seau: str, maximum: int, fenetre: int = 60) -> bool:
 
 
 # --- Jetons CSRF ------------------------------------------------------------
+# Deux corrections par rapport à la première version :
+#
+#  1. Le jeton porte une « audience ». Un jeton récolté sur la page d'accueil
+#     publique ne vaut plus rien sur les routes d'administration : la signature
+#     est calculée avec un sel différent.
+#  2. Le contrôle anti-robot du délai de remplissage s'appuie sur l'horodatage
+#     *signé* du jeton, et non plus sur un champ caché fourni par le client.
+#     L'ancien champ `horodatage` était en clair : un robot le reculait de
+#     quelques secondes et passait la barrière sans effort.
 
-def _serialiseur() -> URLSafeTimedSerializer:
-    return URLSafeTimedSerializer(Config.SECRET_KEY, salt="csrf-hushlab")
+
+def _serialiseur(audience: str) -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(Config.SECRET_KEY, salt=f"csrf-hushlab-{audience}")
 
 
-def jeton_csrf() -> str:
-    """Jeton signé, réutilisé pour toute la requête en cours."""
-    if not hasattr(g, "_csrf"):
-        g._csrf = _serialiseur().dumps("f")
-    return g._csrf
+def jeton_csrf(audience: str = "public") -> str:
+    """Jeton signé et horodaté, réutilisé pour toute la requête en cours."""
+    cle = f"_csrf_{audience}"
+    if not hasattr(g, cle):
+        setattr(g, cle, _serialiseur(audience).dumps(audience))
+    return getattr(g, cle)
 
 
-def verifier_csrf(duree_max: int = 7200) -> None:
-    """Refuse la requête si le jeton est absent, forgé ou expiré.
+def verifier_csrf(audience: str = "public", *, duree_max: int = 7200,
+                  delai_minimum: int = 0) -> None:
+    """Refuse la requête si le jeton est absent, forgé, expiré ou trop frais.
 
-    Double protection : le jeton signé, plus la vérification de l'origine —
-    un formulaire hébergé sur un autre domaine échoue sur les deux.
+    `delai_minimum` remplace l'ancien champ caché : un formulaire renvoyé en
+    moins de N secondes après l'affichage de la page n'a pas été rempli par
+    un humain. Le délai se lit dans la signature, donc il n'est pas falsifiable.
     """
     origine = request.headers.get("Origin") or request.headers.get("Referer")
     if origine and not origine.startswith(request.host_url.rstrip("/")):
@@ -92,9 +106,31 @@ def verifier_csrf(duree_max: int = 7200) -> None:
 
     jeton = request.form.get("csrf") or request.headers.get("X-CSRF-Token", "")
     try:
-        _serialiseur().loads(jeton, max_age=duree_max)
+        _charge, emis_le = _serialiseur(audience).loads(
+            jeton, max_age=duree_max, return_timestamp=True)
     except BadSignature:
         abort(403, description="Jeton de sécurité invalide ou expiré. Rechargez la page.")
+
+    if delai_minimum:
+        age = (datetime.now(UTC) - emis_le).total_seconds()
+        if age < delai_minimum:
+            abort(403, description="Formulaire envoyé trop vite. Réessayez.")
+
+
+# --- Domaine d'accès --------------------------------------------------------
+
+def verifier_hote() -> None:
+    """Refuse une requête présentant un Host non déclaré.
+
+    Tout ce que le site construit en URL absolue — lien canonique, aperçu de
+    partage, destination des QR codes, fiche schema.org — dérive de cet
+    en-tête. Le laisser libre revient à laisser un tiers décider de ces URL.
+    """
+    if not Config.HOTES_AUTORISES:
+        return                                   # développement : pas de contrainte
+    hote = (request.host or "").lower().split(":")[0]
+    if hote not in Config.HOTES_AUTORISES:
+        abort(400, description="Domaine d'accès non reconnu.")
 
 
 # --- En-têtes de réponse ----------------------------------------------------

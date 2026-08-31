@@ -78,7 +78,7 @@
           </p>
         </div>
         <form method="post" action="{{ url_for('admin_statut', identifiant=d.id, statut='nouveau' if d.statut == 'traite' else 'traite') }}">
-          <input type="hidden" name="csrf" value="{{ csrf() }}">
+          <input type="hidden" name="csrf" value="{{ csrf('admin') }}">
           <button type="submit"
                   class="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line px-4 py-2 text-sm font-semibold
                          text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2
@@ -96,6 +96,34 @@
     </article>
     {% endfor %}
   </div>
+
+  {# Navigation : sans elle, les demandes au-delà de la première page
+     disparaissaient purement et simplement de l'écran. #}
+  {% if reste_avant or reste_apres %}
+  <nav class="mt-8 flex items-center justify-between border-t border-slate-200 pt-6" aria-label="Pages">
+    {% if reste_avant %}
+    <a href="{{ url_for('admin', page=page - 1) }}"
+       class="group inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line px-5 py-2.5
+              text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+      <span class="transition-transform duration-200 group-hover:-translate-x-1">{{ icon("arrow-left", "h-4 w-4") }}</span>
+      Plus récentes
+    </a>
+    {% else %}<span></span>{% endif %}
+
+    <span class="text-sm text-muted">Page {{ page }}</span>
+
+    {% if reste_apres %}
+    <a href="{{ url_for('admin', page=page + 1) }}"
+       class="group inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line px-5 py-2.5
+              text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+      Plus anciennes
+      <span class="transition-transform duration-200 group-hover:translate-x-1">{{ icon("arrow-right", "h-4 w-4") }}</span>
+    </a>
+    {% else %}<span></span>{% endif %}
+  </nav>
+  {% endif %}
   {% endif %}
 </section>
 {% endblock %}

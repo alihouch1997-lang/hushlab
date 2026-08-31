@@ -48,6 +48,13 @@ services:
       - key: PYTHON_VERSION
         value: "3.13.5"
 
+      # Domaines sous lesquels le site accepte d'être servi. Sans cette liste,
+      # un appelant fait générer des liens canoniques, des aperçus de partage
+      # et des QR codes pointant vers son propre domaine.
+      # À compléter avec votre adresse Render, puis votre nom de domaine.
+      - key: HUSHLAB_HOTES
+        sync: false
+
       # « sync: false » : Render vous demande la valeur dans son interface.
       # Ces secrets ne passent donc ni par ce fichier, ni par GitHub, ni par moi.
       - key: HUSHLAB_ADMIN_MOTDEPASSE

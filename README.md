@@ -18,7 +18,7 @@ Le site répond alors sur http://localhost:5001.
 ## Vérifier avant chaque envoi
 
 ```bash
-.venv/bin/pytest -q          # 41 tests
+.venv/bin/pytest -q          # 48 tests
 .venv/bin/ruff check .       # conventions et motifs à risque
 .venv/bin/python build.py    # régénère les fichiers statiques
 ```
@@ -53,6 +53,7 @@ versionné : `.env` et `hushlab.db` sont exclus par `.gitignore`.
 | `HUSHLAB_DEBUG` | `1` en développement seulement, **jamais** en ligne. |
 | `HUSHLAB_PROXYS` | Nombre de reverse proxys en amont. `1` chez Render. |
 | `HUSHLAB_BASE` | Chemin de la base, à placer sur un disque persistant. |
+| `HUSHLAB_HOTES` | Domaines autorisés, séparés par des virgules. Indispensable en ligne. |
 | `SMTP_*` | Notification des demandes par email. |
 
 ## Mise en ligne

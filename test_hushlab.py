@@ -30,6 +30,9 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr(Config, "BASE_SQLITE", tmp_path / "test.db")
     donnees.initialiser()
     securite.reinitialiser_limites()   # les compteurs sont partagés par processus
+    # Le délai anti-robot est éprouvé par un test dédié ; ailleurs il ne ferait
+    # qu'imposer deux secondes d'attente à chaque cas.
+    monkeypatch.setattr(Config, "DELAI_MINIMUM_FORMULAIRE", 0)
     app.config["TESTING"] = True
     with app.test_client() as c:
         yield c
@@ -114,12 +117,6 @@ def test_contact_accepte_jeton_valide(client):
 
 def test_leurre_ignore_silencieusement(client):
     envoi = dict(_demande_valide(client), site_web="http://spam.example")
-    assert client.post("/contact", data=envoi).status_code == 302
-    assert donnees.tableau_de_bord()["compteurs"].get("total", 0) == 0
-
-
-def test_envoi_instantane_ignore(client):
-    envoi = dict(_demande_valide(client), horodatage=str(int(time.time())))
     assert client.post("/contact", data=envoi).status_code == 302
     assert donnees.tableau_de_bord()["compteurs"].get("total", 0) == 0
 
@@ -292,3 +289,83 @@ def test_fichiers_statiques_versionnes(client):
         "le CSS est servi sans marqueur de version"
     assert re.search(r'/static/img/[^"]+\?v=\d+', page), \
         "les images sont servies sans marqueur de version"
+
+
+# --- Audit 2026 : failles trouvées en exécutant le code ---------------------
+
+def test_export_csv_neutralise_les_formules(client):
+    """Une cellule commençant par = + - @ s'exécute à l'ouverture dans Excel."""
+    donnees.enregistrer_demande(
+        nom="=cmd|'/c calc'!A1", email="a@b.ma", telephone="", service="",
+        message="Message de longueur suffisante.", origine="/")
+    for ligne in donnees.exporter_csv().splitlines()[1:]:
+        for cellule in ligne.split(";"):
+            assert not cellule.lstrip('"').startswith(("=", "+", "-", "@")), \
+                f"cellule interprétable comme formule : {cellule!r}"
+
+
+def test_domaine_inconnu_refuse(client, monkeypatch):
+    """Sans liste blanche, un Host forgé dicte les URL canoniques et les QR."""
+    monkeypatch.setattr(Config, "HOTES_AUTORISES", ("hushlab.ma", "localhost"))
+    assert client.get("/", headers={"Host": "attaquant.example"}).status_code == 400
+    assert client.get("/", headers={"Host": "hushlab.ma"}).status_code == 200
+
+
+def test_jeton_public_refuse_sur_l_administration(client):
+    """Un jeton récolté sur la page d'accueil ne doit rien ouvrir côté admin."""
+    jeton_public = _jeton(client)
+    reponse = client.post("/admin/demande/1/traite",
+                          data={"csrf": jeton_public}, headers=_auth())
+    assert reponse.status_code == 403
+
+
+def test_formulaire_renvoye_instantanement_refuse(client, monkeypatch):
+    """Le délai est lu dans la signature du jeton : un robot ne peut pas le reculer."""
+    monkeypatch.setattr(Config, "DELAI_MINIMUM_FORMULAIRE", 2)
+    envoi = _demande_valide(client)          # jeton émis à l'instant
+    assert client.post("/contact", data=envoi).status_code == 403
+
+
+def test_ancien_champ_horodatage_sans_effet(client, monkeypatch):
+    """L'ancienne barrière se contournait en reculant un champ caché en clair."""
+    monkeypatch.setattr(Config, "DELAI_MINIMUM_FORMULAIRE", 2)
+    envoi = dict(_demande_valide(client), horodatage=str(int(time.time()) - 3600))
+    assert client.post("/contact", data=envoi).status_code == 403, \
+        "un champ horodatage forgé rouvre la barrière"
+
+
+def test_administration_paginee(client):
+    """Au-delà d'une page, les demandes doivent rester atteignables."""
+    for i in range(30):
+        donnees.enregistrer_demande(
+            nom=f"Client {i}", email=f"c{i}@ex.ma", telephone="", service="",
+            message="Message de longueur suffisante.", origine="/")
+    page1 = client.get("/admin", headers=_auth()).data.decode()
+    assert "page=2" in page1, "aucun lien vers les demandes suivantes"
+    page2 = client.get("/admin?page=2", headers=_auth()).data.decode()
+    assert "Client 0" in page2, "les demandes anciennes sont inatteignables"
+
+
+def test_versions_statiques_lues_une_seule_fois(client):
+    """Trente appels système par page pour dater les fichiers, c'était trop."""
+    import pathlib as _p
+    compteur = {"n": 0}
+    vrai = _p.Path.stat
+
+    def compte(self, *a, **k):
+        compteur["n"] += 1
+        return vrai(self, *a, **k)
+
+    from app import _version_fichier
+    _version_fichier.cache_clear()
+    _p.Path.stat = compte
+    try:
+        client.get("/")
+        premier = compteur["n"]
+        compteur["n"] = 0
+        client.get("/")
+        second = compteur["n"]
+    finally:
+        _p.Path.stat = vrai
+    assert second == 0, f"{second} appels stat() sur une page déjà servie"
+    assert premier > 0

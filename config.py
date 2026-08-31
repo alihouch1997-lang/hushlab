@@ -39,6 +39,16 @@ class Config:
     # de l'infrastructure réelle (1 pour Render, Railway, Fly.io).
     PROXYS_DE_CONFIANCE = int(os.environ.get("HUSHLAB_PROXYS", 0))
 
+    # Domaines sous lesquels le site accepte d'être servi, séparés par des
+    # virgules. L'en-tête Host est fourni par l'appelant : sans liste blanche,
+    # un attaquant fait générer des URL canoniques, des aperçus de partage et
+    # des QR codes pointant vers son propre domaine.
+    # Vide = tout accepté (développement uniquement).
+    HOTES_AUTORISES = tuple(
+        h.strip().lower()
+        for h in os.environ.get("HUSHLAB_HOTES", "").split(",") if h.strip()
+    )
+
     # --- Limites (déni de service) ----------------------------------------
     MAX_CONTENT_LENGTH = 64 * 1024          # corps de requête : 64 Ko suffisent
     LONGUEURS_MAX = {                       # par champ du formulaire
@@ -46,6 +56,9 @@ class Config:
         "service": 60, "message": 5000, "origine": 200,
     }
     DEMANDES_PAR_MINUTE = 5                 # par adresse IP
+    # Délai minimal entre l'affichage du formulaire et son envoi. Lu dans
+    # l'horodatage signé du jeton CSRF, donc non falsifiable.
+    DELAI_MINIMUM_FORMULAIRE = int(os.environ.get("HUSHLAB_DELAI_FORMULAIRE", 2))
     ESSAIS_ADMIN_PAR_MINUTE = 5
 
     # --- Base de données ---------------------------------------------------
