@@ -1,0 +1,67 @@
+/* Police auto-hébergée : une seule variable font (400→800) servie depuis
+   notre domaine. Plus aucune requête vers fonts.googleapis.com. */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/static/fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+2074, U+20AC, U+2122, U+2212;
+}
+
+/* Ce que Tailwind ne fournit pas : perspective, rotations 3D isometriques,
+   et le respect des preferences de mouvement reduit. */
+
+.perspective {
+  perspective: 2000px;
+}
+
+/* Carte heroique : leger isometrique qui se redresse au survol. */
+.iso {
+  transform: rotateX(5deg) rotateY(-12deg);
+  transform-style: preserve-3d;
+  transition: transform 500ms ease-out, box-shadow 500ms ease-out;
+}
+.iso:hover,
+.group:hover .iso {
+  transform: rotateX(2deg) rotateY(-8deg);
+}
+
+/* Cartes de fonctionnalites : inclinaison alternee selon la position. */
+.iso-left  { transform: rotateY(6deg);  transition: transform 500ms ease-out; }
+.iso-right { transform: rotateY(-6deg); transition: transform 500ms ease-out; }
+.iso-left:hover,
+.iso-right:hover { transform: rotateY(0deg); }
+
+/* Respiration lente des elements decoratifs flottants. */
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.animate-float { animation: float-soft 4000ms ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .iso, .iso-left, .iso-right { transform: none; }
+}
+
+/* Révélation au défilement. L'état initial n'est appliqué que si le
+   navigateur exécute le script (classe .js sur <html>) : sans JavaScript,
+   le contenu reste visible. */
+.js .reveler {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 600ms ease-out, transform 600ms ease-out;
+}
+.js .reveler.visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .reveler { opacity: 1; transform: none; transition: none; }
+}

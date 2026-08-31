@@ -1,0 +1,21 @@
+{% from "macros.html" import section_heading, icon %}
+
+<section id="faq" class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+  {{ section_heading(sections.faq.title, kicker=sections.faq.kicker) }}
+
+  <div class="mx-auto mt-12 max-w-3xl space-y-4">
+    {% for item in faq %}
+    {# <details> natif : accessible au clavier et aux lecteurs d'ecran sans JS. #}
+    <details class="group rounded-xl border border-slate-100 bg-white px-6 shadow-soft transition-all duration-200 hover:shadow-lifted">
+      <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left font-semibold text-ink
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+        {{ item.q }}
+        <span class="shrink-0 text-indigo-600 transition-transform duration-200 group-open:rotate-180">
+          {{ icon("chevron-down", "h-5 w-5") }}
+        </span>
+      </summary>
+      <p class="pb-5 pr-8 leading-relaxed text-muted">{{ item.a }}</p>
+    </details>
+    {% endfor %}
+  </div>
+</section>

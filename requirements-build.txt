@@ -1,0 +1,7 @@
+# Dépendances de la chaîne de build uniquement (build.py)
+# Le site tourne sans elles.
+-r requirements.txt
+pytailwindcss>=0.2
+pillow>=10
+fonttools>=4
+brotli>=1

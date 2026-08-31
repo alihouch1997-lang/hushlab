@@ -1,0 +1,166 @@
+"""Couche de sécurité : en-têtes, CSRF, limitation de débit, authentification.
+
+Les mesures suivent les recommandations OWASP applicables à un site vitrine
+avec formulaire et écran d'administration :
+
+  A01 Contrôle d'accès       → `protege` + limitation des essais
+  A02 Défaillances crypto    → jetons signés, comparaison à temps constant
+  A03 Injection              → requêtes paramétrées (donnees.py) + CSP
+  A05 Mauvaise configuration → débogueur désactivé par défaut, en-têtes stricts
+  A07 Authentification       → limitation de débit sur le mot de passe admin
+"""
+
+import secrets
+import time
+from collections import defaultdict, deque
+from functools import wraps
+
+from flask import Response, abort, g, render_template, request
+from itsdangerous import BadSignature, URLSafeTimedSerializer
+
+from config import Config
+
+# --- Limitation de débit ----------------------------------------------------
+# Compteur en mémoire : suffisant pour un site servi par un seul processus.
+# Derrière plusieurs workers ou plusieurs machines, il faudra un stockage
+# partagé (Redis) — la limite deviendrait sinon « N fois la limite ».
+_HISTORIQUE: dict[str, deque] = defaultdict(deque)
+_DERNIER_MENAGE = 0.0
+
+
+def reinitialiser_limites() -> None:
+    """Vide les compteurs. Utilisé par les tests pour repartir d'un état neuf."""
+    _HISTORIQUE.clear()
+
+
+def _faire_le_menage(maintenant: float, fenetre: int) -> None:
+    """Supprime les seaux vides.
+
+    Sans cela, le dictionnaire garde une entrée par adresse IP vue depuis le
+    démarrage : une fuite mémoire lente mais certaine sur un site public.
+    """
+    global _DERNIER_MENAGE
+    if maintenant - _DERNIER_MENAGE < 300:      # au plus toutes les 5 minutes
+        return
+    _DERNIER_MENAGE = maintenant
+    for cle in [c for c, h in _HISTORIQUE.items()
+                if not h or maintenant - h[-1] > fenetre]:
+        del _HISTORIQUE[cle]
+
+
+def _client() -> str:
+    """Adresse de l'appelant. Derrière un reverse proxy, voir ProxyFix."""
+    return request.remote_addr or "inconnu"
+
+
+def trop_de_requetes(seau: str, maximum: int, fenetre: int = 60) -> bool:
+    """Renvoie True si l'appelant dépasse `maximum` appels dans la fenêtre."""
+    cle = f"{seau}:{_client()}"
+    maintenant = time.monotonic()
+    _faire_le_menage(maintenant, fenetre)
+    horodatages = _HISTORIQUE[cle]
+    while horodatages and maintenant - horodatages[0] > fenetre:
+        horodatages.popleft()
+    if len(horodatages) >= maximum:
+        return True
+    horodatages.append(maintenant)
+    return False
+
+
+# --- Jetons CSRF ------------------------------------------------------------
+
+def _serialiseur() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(Config.SECRET_KEY, salt="csrf-hushlab")
+
+
+def jeton_csrf() -> str:
+    """Jeton signé, réutilisé pour toute la requête en cours."""
+    if not hasattr(g, "_csrf"):
+        g._csrf = _serialiseur().dumps("f")
+    return g._csrf
+
+
+def verifier_csrf(duree_max: int = 7200) -> None:
+    """Refuse la requête si le jeton est absent, forgé ou expiré.
+
+    Double protection : le jeton signé, plus la vérification de l'origine —
+    un formulaire hébergé sur un autre domaine échoue sur les deux.
+    """
+    origine = request.headers.get("Origin") or request.headers.get("Referer")
+    if origine and not origine.startswith(request.host_url.rstrip("/")):
+        abort(403, description="Origine de la requête non autorisée.")
+
+    jeton = request.form.get("csrf") or request.headers.get("X-CSRF-Token", "")
+    try:
+        _serialiseur().loads(jeton, max_age=duree_max)
+    except BadSignature:
+        abort(403, description="Jeton de sécurité invalide ou expiré. Rechargez la page.")
+
+
+# --- En-têtes de réponse ----------------------------------------------------
+
+def nonce_csp() -> str:
+    """Valeur à usage unique autorisant nos propres scripts en ligne."""
+    if not hasattr(g, "_nonce"):
+        g._nonce = secrets.token_urlsafe(16)
+    return g._nonce
+
+
+def poser_entetes(reponse: Response) -> Response:
+    """Applique les en-têtes de sécurité à chaque réponse."""
+    politique = (
+        "default-src 'self'; "
+        f"script-src 'self' 'nonce-{nonce_csp()}'; "
+        "style-src 'self' 'unsafe-inline'; "   # classes utilitaires + <style> compilé
+        "img-src 'self' data:; "
+        "font-src 'self'; "
+        "connect-src 'self'; "
+        "form-action 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "object-src 'none'"
+    )
+    reponse.headers.setdefault("Content-Security-Policy", politique)
+    reponse.headers.setdefault("X-Content-Type-Options", "nosniff")
+    reponse.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    reponse.headers.setdefault("X-Frame-Options", "DENY")
+    reponse.headers.setdefault("Permissions-Policy",
+                               "geolocation=(), microphone=(), camera=(), interest-cohort=()")
+    if request.is_secure:
+        reponse.headers.setdefault("Strict-Transport-Security",
+                                   "max-age=31536000; includeSubDomains")
+    # Les pages d'administration contiennent des données clients : aucun cache.
+    if request.path.startswith("/admin"):
+        reponse.headers["Cache-Control"] = "no-store, private"
+    return reponse
+
+
+# --- Authentification de l'administration -----------------------------------
+
+def protege(vue):
+    """Exige le mot de passe d'administration, avec limitation des essais.
+
+    Tant que HUSHLAB_ADMIN_MOTDEPASSE n'est pas définie, l'écran reste fermé :
+    aucune administration n'est joignable par défaut.
+    """
+    @wraps(vue)
+    def enveloppe(*args, **kwargs):
+        attendu = Config.ADMIN_MOTDEPASSE
+        if not attendu:
+            return render_template("admin_ferme.html"), 503
+
+        auth = request.authorization
+        fourni = auth.password if auth and auth.password else ""
+
+        # Le compteur ne s'incrémente que sur échec : un usage normal n'est
+        # jamais bridé, une attaque par dictionnaire l'est au bout de 5 essais.
+        if secrets.compare_digest(fourni, attendu):
+            return vue(*args, **kwargs)
+
+        if trop_de_requetes("admin", Config.ESSAIS_ADMIN_PAR_MINUTE):
+            abort(429, description="Trop de tentatives. Réessayez dans une minute.")
+
+        return Response(
+            "Accès réservé", 401,
+            {"WWW-Authenticate": 'Basic realm="Administration Hushlab"'})
+    return enveloppe

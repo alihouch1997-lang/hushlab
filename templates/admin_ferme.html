@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl px-4 py-24 sm:px-6">
+  <div class="rounded-xl border border-amber-200 bg-amber-50 p-8">
+    <h1 class="text-2xl font-bold text-ink">L'administration est fermée</h1>
+    <p class="mt-4 leading-relaxed text-slate-700">
+      Aucun mot de passe n'est défini, donc l'écran de gestion des demandes reste
+      inaccessible — c'est volontaire : il ne doit jamais être ouvert par défaut.
+    </p>
+    <p class="mt-4 leading-relaxed text-slate-700">
+      Pour l'activer, définissez la variable d'environnement
+      <code class="rounded bg-white px-2 py-0.5 font-mono text-sm">HUSHLAB_ADMIN_MOTDEPASSE</code>
+      avant de lancer le site, puis connectez-vous avec n'importe quel identifiant
+      et ce mot de passe.
+    </p>
+    <pre class="mt-6 overflow-x-auto rounded-lg bg-ink p-4 text-sm text-slate-100"><code>HUSHLAB_ADMIN_MOTDEPASSE="votre-mot-de-passe" .venv/bin/python app.py</code></pre>
+  </div>
+</section>
+{% endblock %}

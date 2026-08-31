@@ -1,0 +1,37 @@
+{% from "macros.html" import section_heading, avatar, stars, icon %}
+
+{# La section n'existe que s'il y a de vrais avis à montrer : la liste
+   TEMOIGNAGES est vide tant que vous ne l'avez pas remplie. #}
+{% if temoignages %}
+<section id="temoignages" class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+  {{ section_heading(sections.temoignages.title, sections.temoignages.subtitle, sections.temoignages.kicker) }}
+
+  <div class="mt-16 grid gap-8 lg:grid-cols-3 lg:grid-rows-2">
+    {% for avis in temoignages %}
+    <figure class="relative flex h-full flex-col rounded-xl border bg-white p-8 transition-all duration-200
+                   hover:-translate-y-1 hover:shadow-lifted
+                   {% if avis.featured %}border-transparent shadow-lifted ring-1 ring-indigo-200 lg:col-span-2 lg:row-span-2{% else %}border-slate-100 shadow-soft{% endif %}">
+      <span class="absolute right-8 top-8 text-indigo-100">{{ icon("quote", "h-10 w-10") }}</span>
+      {{ stars(avis.rating) }}
+      <div class="{{ 'my-auto py-6' if avis.featured else 'flex-1' }}">
+        <blockquote class="mt-5 {{ 'text-2xl' if avis.featured else 'text-base' }} leading-relaxed text-slate-700">
+          « {{ avis.quote }} »
+        </blockquote>
+        {% if avis.metric %}
+        <p class="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+          {{ icon("trending-up", "h-4 w-4") }} {{ avis.metric }}
+        </p>
+        {% endif %}
+      </div>
+      <figcaption class="mt-6 flex items-center gap-4 border-t border-slate-100 pt-6">
+        {{ avatar(avis.initials) }}
+        <div>
+          <p class="font-semibold text-ink">{{ avis.name }}</p>
+          <p class="text-sm text-muted">{{ avis.role }}{% if avis.company %} · {{ avis.company }}{% endif %}</p>
+        </div>
+      </figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

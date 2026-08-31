@@ -1,0 +1,14 @@
+# Secrets et données
+.env
+hushlab.db
+hushlab.db-wal
+hushlab.db-shm
+
+# Environnement et caches
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Fichiers produits par build.py (régénérables)
+assets/_source.css

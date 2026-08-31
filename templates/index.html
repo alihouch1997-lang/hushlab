@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{# Valeurs par défaut : la page se rend aussi bien sans état de formulaire. #}
+{% set erreurs = erreurs | default({}) %}
+{% set valeurs = valeurs | default({}) %}
+
+{% block content %}
+  {% include "sections/hero.html" %}
+  {% include "sections/engagements.html" %}
+  {% include "sections/services.html" %}
+  {% include "sections/qr.html" %}
+  {% include "sections/methode.html" %}
+  {% include "sections/offres.html" %}
+  {% include "sections/temoignages.html" %}
+  {% include "sections/blog_preview.html" %}
+  {% include "sections/faq.html" %}
+  {% include "sections/contact.html" %}
+  {% include "sections/cta.html" %}
+{% endblock %}

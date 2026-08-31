@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "macros.html" import btn_primary, btn_secondary %}
+
+{% block content %}
+<section class="mx-auto flex max-w-2xl flex-col items-center px-4 py-24 text-center sm:px-6 sm:py-32">
+  <p class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-6xl font-extrabold tracking-tightest text-transparent sm:text-7xl">
+    {{ code }}
+  </p>
+  <h1 class="mt-6 text-3xl font-bold leading-display tracking-tightest text-ink sm:text-4xl">{{ titre }}</h1>
+  <p class="mt-4 text-lg leading-relaxed text-muted">{{ explication }}</p>
+  <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+    {{ btn_primary("Retour à l'accueil", url_for('accueil'), "arrow-right") }}
+    {{ btn_secondary("Nous contacter", url_for('accueil') ~ "#contact", "message-circle") }}
+  </div>
+</section>
+{% endblock %}

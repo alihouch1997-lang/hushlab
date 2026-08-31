@@ -1,0 +1,155 @@
+{# Composants reutilisables du design system. Toute variation de bouton ou de
+   carte passe par ici : aucun style ponctuel dans les sections. #}
+
+{# L'icône est rendue en SVG inline par le global `icone` (app.py). #}
+{% macro icon(name, classes="h-5 w-5") -%}
+{{ icone(name, classes) }}
+{%- endmacro %}
+
+{# Bouton principal : degrade indigo -> violet, ombre coloree, leger soulevement. #}
+{% macro btn_primary(label, href="#", icon_name=None, full=False) -%}
+<a href="{{ href }}"
+   class="group inline-flex {{ 'w-full justify-center' if full else '' }} items-center gap-2 rounded-full
+          bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3 text-sm font-semibold text-white
+          shadow-button transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lifted
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+  {{ label }}
+  {% if icon_name %}<span class="transition-transform duration-200 group-hover:translate-x-1">{{ icon(icon_name, "h-4 w-4") }}</span>{% endif %}
+</a>
+{%- endmacro %}
+
+{# Bouton secondaire : surface blanche, bordure discrete. #}
+{% macro btn_secondary(label, href="#", icon_name=None, full=False) -%}
+<a href="{{ href }}"
+   class="group inline-flex {{ 'w-full justify-center' if full else '' }} items-center gap-2 rounded-full border
+          border-line bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-all duration-200
+          hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+  {% if icon_name %}{{ icon(icon_name, "h-4 w-4") }}{% endif %}
+  {{ label }}
+</a>
+{%- endmacro %}
+
+{# Bouton inverse, pour le CTA final sur fond indigo profond. #}
+{% macro btn_inverse(label, href="#", icon_name=None) -%}
+<a href="{{ href }}"
+   class="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold
+          text-indigo-700 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-50
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2
+          focus-visible:ring-offset-indigo-900">
+  {{ label }}
+  {% if icon_name %}<span class="transition-transform duration-200 group-hover:translate-x-1">{{ icon(icon_name, "h-4 w-4") }}</span>{% endif %}
+</a>
+{%- endmacro %}
+
+{# Carte de base : blanche, rayon 12px, ombre coloree, soulevement au survol. #}
+{% macro card(extra="") -%}
+<div class="rounded-xl border border-slate-100 bg-white shadow-soft transition-all duration-200
+            hover:-translate-y-1 hover:shadow-lifted {{ extra }}">
+  {{ caller() }}
+</div>
+{%- endmacro %}
+
+{# Pastille d'icone : icone indigo sur fond indigo tres clair. #}
+{% macro icon_badge(name, size="h-14 w-14") -%}
+<div class="{{ size }} flex items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+  {{ icon(name, "h-6 w-6") }}
+</div>
+{%- endmacro %}
+
+{# Surtitre de section : petite majuscule indigo au-dessus du titre. #}
+{% macro eyebrow(text) -%}
+<span class="text-sm font-semibold uppercase tracking-widest text-indigo-600">{{ text }}</span>
+{%- endmacro %}
+
+{# En-tete de section centre, largeur de texte contrainte pour la lisibilite. #}
+{% macro section_heading(title, subtitle=None, kicker=None) -%}
+<div class="mx-auto max-w-2xl text-center">
+  {% if kicker %}{{ eyebrow(kicker) }}{% endif %}
+  <h2 class="mt-3 text-3xl font-bold leading-display tracking-tightest text-ink sm:text-4xl">{{ title }}</h2>
+  {% if subtitle %}<p class="mt-4 text-lg leading-relaxed text-muted">{{ subtitle }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{# Champ de formulaire : label semibold, focus ring indigo, erreur accessible. #}
+{% macro field(name, label, type="text", value="", error=None, placeholder="", rows=0) -%}
+{% set base = "mt-2 w-full rounded-lg border bg-white px-4 py-3 text-base text-ink placeholder:text-slate-400
+               transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1" %}
+{% set state = "border-rose-400 focus:border-rose-500 focus:ring-rose-500" if error else "border-slate-200 focus:border-indigo-500" %}
+<div>
+  <label for="{{ name }}" class="text-sm font-semibold text-slate-700">{{ label }}</label>
+  {% if rows %}
+    <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}" placeholder="{{ placeholder }}"
+              class="{{ base }} {{ state }}"
+              {% if error %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>{{ value }}</textarea>
+  {% else %}
+    <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value }}" placeholder="{{ placeholder }}"
+           class="{{ base }} {{ state }}"
+           {% if error %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>
+  {% endif %}
+  {% if error %}<p id="{{ name }}-error" class="mt-2 text-sm font-medium text-rose-600">{{ error }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{# Pastille d'initiales en dégradé : sert d'avatar sans charger d'image. #}
+{% macro avatar(initials, size="h-12 w-12", text_size="text-sm") -%}
+<span class="{{ size }} {{ text_size }} flex shrink-0 items-center justify-center rounded-full
+             bg-gradient-to-br from-indigo-600 to-violet-600 font-bold text-white">{{ initials }}</span>
+{%- endmacro %}
+
+{# Note sur 5, rendue en étoiles pleines ambre. #}
+{% macro stars(note) -%}
+<div class="flex gap-0.5" role="img" aria-label="Note de {{ note }} sur 5">
+  {% for _ in range(note) %}{{ icon("star", "h-4 w-4 fill-amber-400 text-amber-400") }}{% endfor %}
+</div>
+{%- endmacro %}
+
+{# Étiquette de catégorie d'article. #}
+{% macro tag(label) -%}
+{# `self-start w-fit` : sans cela l'étiquette s'étire sur toute la largeur
+   quand elle est posée dans une carte en flex-col. #}
+<span class="inline-flex w-fit self-start items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">{{ label }}</span>
+{%- endmacro %}
+
+{# Carte d'article, partagée entre l'aperçu de l'accueil et la page /blog.
+   La couverture est un dégradé (aucune image externe à charger) qui zoome
+   au survol, exactement comme le ferait une photo. #}
+{% macro article_card(article) -%}
+<a href="{{ url_for('article', slug=article.slug) }}"
+   class="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-100 bg-white shadow-soft
+          transition-all duration-200 hover:-translate-y-1 hover:shadow-lifted
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+
+  <div class="relative aspect-[16/9] overflow-hidden">
+    {{ photo(article.image, article.image_alt,
+             "h-full w-full object-cover transition-transform duration-500 group-hover:scale-105",
+             960, 540) }}
+    <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+  </div>
+
+  <div class="flex flex-1 flex-col p-6">
+    {{ tag(article.category) }}
+    <h3 class="mt-4 text-lg font-bold leading-snug text-ink transition-colors duration-200 group-hover:text-indigo-700">{{ article.title }}</h3>
+    <p class="mt-3 flex-1 text-sm leading-relaxed text-muted">{{ article.excerpt }}</p>
+    <div class="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+      <span class="text-xs text-muted">{{ article.date }} · {{ article.read_time }}</span>
+      <span class="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600">
+        Lire <span class="transition-transform duration-200 group-hover:translate-x-1">{{ icon("arrow-right", "h-4 w-4") }}</span>
+      </span>
+    </div>
+  </div>
+</a>
+{%- endmacro %}
+
+{# Photo servie en WebP avec repli JPEG automatique. Les deux variantes sont
+   produites par build.py ; on ne cite ici que le nom de base du fichier. #}
+{% macro photo(fichier, alt, classes="", largeur=960, hauteur=640, prioritaire=False) -%}
+{% set base = fichier.rsplit(".", 1)[0] %}
+<picture>
+  <source srcset="{{ url_for('static', filename='img/' ~ base ~ '.webp') }}" type="image/webp">
+  <img src="{{ url_for('static', filename='img/' ~ base ~ '.jpg') }}"
+       alt="{{ alt }}" width="{{ largeur }}" height="{{ hauteur }}"
+       {% if prioritaire %}fetchpriority="high"{% else %}loading="lazy" decoding="async"{% endif %}
+       class="{{ classes }}">
+</picture>
+{%- endmacro %}

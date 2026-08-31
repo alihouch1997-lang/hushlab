@@ -1,0 +1,52 @@
+{% from "macros.html" import btn_primary, btn_secondary, icon, photo %}
+
+<section class="relative">
+  <div class="mx-auto grid max-w-7xl items-center gap-16 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:py-24">
+
+    <div>
+      <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-indigo-100 to-violet-100 p-1 pr-4">
+        <span class="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-bold tracking-wide text-white">{{ hero.badge }}</span>
+        <span class="text-sm font-medium text-indigo-900">{{ hero.badge_text }}</span>
+      </div>
+
+      <h1 class="mt-6 text-4xl font-extrabold leading-display tracking-tightest text-ink sm:text-5xl lg:text-6xl">
+        {{ hero.title_plain }}
+        <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">{{ hero.title_gradient }}</span>
+      </h1>
+
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted">{{ hero.body }}</p>
+
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        {{ btn_primary(hero.primary_cta, "#contact", "arrow-right") }}
+        {{ btn_secondary(hero.secondary_cta, "#services", "layers") }}
+      </div>
+
+      <p class="mt-6 flex items-center gap-2 text-sm text-muted">
+        {{ icon("circle-check-big", "h-4 w-4 text-emerald-500") }} {{ hero.proof }}
+      </p>
+    </div>
+
+    {# Photo en perspective isométrique, qui se redresse au survol. #}
+    <div class="perspective group relative">
+      <div class="iso overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lifted">
+        {{ photo(hero.image, hero.image_alt,
+                 "h-full w-full object-cover transition-transform duration-500 group-hover:scale-105",
+                 960, 640, prioritaire=True) }}
+      </div>
+
+      {# Carte flottante : un vrai raccourci d'appel, pas un ornement. #}
+      <a href="{{ site.whatsapp }}"
+         class="animate-float absolute -bottom-8 left-4 hidden items-center gap-3 rounded-xl border border-slate-100 bg-white px-4 py-3
+                shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lifted
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:flex">
+        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          {{ icon("message-circle", "h-5 w-5") }}
+        </span>
+        <span>
+          <span class="block text-sm font-semibold text-ink">Écrire sur WhatsApp</span>
+          <span class="block text-xs text-muted">{{ site.phone_display }}</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>

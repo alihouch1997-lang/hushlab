@@ -1,0 +1,40 @@
+{% from "macros.html" import section_heading, icon, avatar, photo %}
+
+<section id="methode" class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+  {{ section_heading(sections.methode.title, sections.methode.subtitle, sections.methode.kicker) }}
+
+  <div class="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+    {% for etape in methode %}
+    <div class="relative rounded-xl border border-slate-100 bg-white p-6 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-lifted">
+      {# Numéro d'étape en pastille lumineuse. #}
+      <span class="absolute -top-4 left-6 flex h-9 w-9 items-center justify-center rounded-full
+                   bg-gradient-to-r from-indigo-600 to-violet-600 text-sm font-bold text-white shadow-glow">
+        {{ loop.index }}
+      </span>
+      <div class="mt-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+        {{ icon(etape.icon, "h-5 w-5") }}
+      </div>
+      <h3 class="mt-5 text-lg font-bold text-ink">{{ etape.title }}</h3>
+      <p class="mt-2 text-sm leading-relaxed text-muted">{{ etape.body }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# Bloc fondateur : photo d'ambiance à gauche, présentation à droite. #}
+  <div class="mt-16 grid overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-soft lg:grid-cols-2">
+    <div class="relative aspect-[16/10] lg:aspect-auto">
+      {{ photo(fondateur.image, fondateur.image_alt, "h-full w-full object-cover", 960, 640) }}
+    </div>
+    <div class="flex flex-col justify-center p-8 sm:p-10">
+      <span class="text-sm font-semibold uppercase tracking-widest text-indigo-600">À propos</span>
+      <p class="mt-4 text-lg leading-relaxed text-slate-700">{{ fondateur.text }}</p>
+      <div class="mt-8 flex items-center gap-4 border-t border-slate-100 pt-6">
+        {{ avatar(site.founder_initials, "h-12 w-12") }}
+        <div>
+          <p class="font-semibold text-ink">{{ site.founder }}</p>
+          <p class="text-sm text-muted">{{ site.founder_role }} de {{ site.name }} · {{ site.city }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
