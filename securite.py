@@ -16,7 +16,7 @@ from collections import defaultdict, deque
 from datetime import UTC, datetime
 from functools import wraps
 
-from flask import Response, abort, g, render_template, request
+from flask import Response, abort, current_app, g, render_template, request
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from config import Config
@@ -130,6 +130,13 @@ def verifier_hote() -> None:
         return                                   # développement : pas de contrainte
     hote = (request.host or "").lower().split(":")[0]
     if hote not in Config.HOTES_AUTORISES:
+        # Journalisé explicitement : sans cette ligne, une liste HUSHLAB_HOTES
+        # mal renseignée fait répondre 400 à tout le monde sans qu'aucun
+        # message n'indique quel domaine a été refusé ni lequel était attendu.
+        current_app.logger.warning(
+            "Domaine refusé : %r. HUSHLAB_HOTES contient %s. "
+            "Ajoutez-y ce domaine, ou videz la variable pour tout accepter.",
+            hote, ", ".join(Config.HOTES_AUTORISES) or "(vide)")
         abort(400, description="Domaine d'accès non reconnu.")
 
 

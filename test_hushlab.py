@@ -369,3 +369,13 @@ def test_versions_statiques_lues_une_seule_fois(client):
         _p.Path.stat = vrai
     assert second == 0, f"{second} appels stat() sur une page déjà servie"
     assert premier > 0
+
+
+def test_domaine_refuse_est_journalise(client, monkeypatch, caplog):
+    """Un 400 muet sur tout le site serait indiagnosticable sans ce message."""
+    monkeypatch.setattr(Config, "HOTES_AUTORISES", ("hushlab.ma",))
+    with caplog.at_level("WARNING"):
+        client.get("/", headers={"Host": "hushlab.onrender.com"})
+    trace = caplog.text
+    assert "hushlab.onrender.com" in trace, "le domaine refusé n'est pas journalisé"
+    assert "hushlab.ma" in trace, "les domaines attendus ne sont pas rappelés"

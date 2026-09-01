@@ -48,10 +48,16 @@ services:
       - key: PYTHON_VERSION
         value: "3.13.5"
 
-      # Domaines sous lesquels le site accepte d'être servi. Sans cette liste,
-      # un appelant fait générer des liens canoniques, des aperçus de partage
-      # et des QR codes pointant vers son propre domaine.
-      # À compléter avec votre adresse Render, puis votre nom de domaine.
+      # Domaines sous lesquels le site accepte d'être servi, séparés par des
+      # virgules. Sans cette liste, un appelant fait générer des liens
+      # canoniques, des aperçus de partage et des QR codes pointant vers son
+      # propre domaine.
+      #
+      # ATTENTION : si vous la renseignez, elle DOIT contenir l'adresse par
+      # laquelle vous accédez au site, sinon toutes les pages répondent 400.
+      # Valeur de départ :        hushlab.onrender.com
+      # Après achat du domaine :  hushlab.onrender.com,hushlab.ma,www.hushlab.ma
+      # En cas de doute, laissez vide : tous les domaines sont alors acceptés.
       - key: HUSHLAB_HOTES
         sync: false
 
