@@ -62,19 +62,23 @@ ENGAGEMENTS = [
 # qu'en liste plate : le visiteur se reconnaît dans une étape et va droit à
 # ce qui le concerne. L'ordre des pôles est celui de la page.
 POLES = [
-    {"cle": "demarrer", "titre": "Démarrer",
-     "chapeau": "Faire exister l'entreprise, et la rendre capable de facturer."},
-    {"cle": "etre-trouve", "titre": "Être trouvé",
-     "chapeau": "Exister là où vos clients vous cherchent, et leur donner envie d'entrer."},
+    {"cle": "attirer", "titre": "Attirer des clients",
+     "chapeau": "Se faire trouver, et donner envie d'entrer."},
     {"cle": "gagner-du-temps", "titre": "Gagner du temps",
-     "chapeau": "Rendre à vos équipes les heures que la routine leur prend."},
+     "chapeau": "Confier ce qui prend des heures et n'en rapporte aucune."},
 ]
 
+# Tous les titres suivent la même construction : possessif, nom, virgule,
+# qualificatif. Le rythme est identique d'une carte à l'autre, et les longueurs
+# tiennent dans un écart de quinze caractères — condition pour que les cartes
+# s'alignent sans rustine.
+#
+# Chaque service porte exactement quatre puces et un texte de deux lignes :
+# c'est ce qui fait tenir la grille au millimètre.
 SERVICES = [
-    # --- Pôle : gérer · le service phare, présenté à part sur la page ---------
     {
         "slug": "gestion",
-        "pole": "gerer",
+        "pole": "gagner-du-temps",
         "phare": True,
         "icon": "layout-dashboard",
         "eyebrow": "Le sur-mesure",
@@ -89,7 +93,7 @@ SERVICES = [
             "Devis, factures et bons de livraison à votre en-tête",
             "Suivi des clients, des règlements et des impayés",
             "États de TVA et exports prêts pour votre comptable",
-            "Tableaux de bord adaptés à votre activité, pas à celle du voisin",
+            "Tableaux de bord adaptés à votre activité",
             "Aucun abonnement, aucun coût par utilisateur ajouté",
         ],
         # NOTE À COMPLÉTER : relevez les tarifs réels de deux ou trois solutions
@@ -103,78 +107,51 @@ SERVICES = [
         "image_alt": "Tableau de bord de gestion affiché sur un ordinateur portable",
     },
 
-    # --- Pôle : démarrer ------------------------------------------------------
-    {
-        "slug": "creation-entreprise",
-        "pole": "demarrer",
-        "icon": "building-2",
-        "title": "Votre société, prête à facturer",
-        "body": (
-            "Statuts, immatriculation, démarches fiscales et sociales : vous signez, "
-            "nous portons le dossier jusqu'au bout. Vous ressortez avec une société qui "
-            "existe et la capacité d'émettre votre première facture."
-        ),
-        "bullets": [
-            "Forme juridique choisie selon votre activité réelle",
-            "Rédaction et dépôt des statuts",
-            "Immatriculation et enregistrements",
-            "Premières démarches fiscales et sociales accompagnées",
-        ],
-        "image": "service-creation-entreprise.jpg",
-        "image_alt": "Document de plan d'affaires posé sur un bureau",
-    },
-
-    # --- Pôle : être trouvé ---------------------------------------------------
+    # --- Attirer des clients --------------------------------------------------
     {
         "slug": "avis-nfc",
-        "pole": "etre-trouve",
+        "pole": "attirer",
         "icon": "qr-code",
         "title": "Vos avis Google, en pilote automatique",
         "body": (
-            "Un seul support posé sur le comptoir, qui fonctionne au scan comme au "
-            "contact : votre client laisse son avis en trois secondes. Vous voyez "
-            "combien de personnes l'utilisent, et les réponses partent toutes seules, "
-            "dans votre ton."
+            "Un support posé sur le comptoir, qui fonctionne au scan comme au contact. "
+            "Votre client laisse son avis en trois secondes."
         ),
         "bullets": [
-            "NFC et QR sur le même support : carte, plaque, chevalet",
-            "Avis Google, page Instagram, page Facebook",
-            "Réponse automatique aux avis, écrite dans votre style",
-            "Suivi des scans : vous savez quel support travaille",
-            "Menu, WiFi, contact, catalogue : destination modifiable sans réimprimer",
+            "NFC et QR réunis sur un même support",
+            "Avis Google, Instagram, Facebook",
+            "Réponses publiées automatiquement",
+            "Suivi des scans, support réutilisable",
         ],
         "image": "service-qr-nfc.jpg",
         "image_alt": "Main tenant un smartphone",
     },
     {
         "slug": "site-web",
-        "pole": "etre-trouve",
+        "pole": "attirer",
         "icon": "globe",
-        "title": "Un site qui fait venir des clients",
+        "title": "Votre site, fait pour être trouvé",
         "body": (
-            "Site vitrine, pages de services, menu en ligne : un site qui dit clairement "
-            "ce que vous faites et donne envie de vous appeler. Pensé d'abord pour le "
-            "téléphone, là où vos clients vous cherchent vraiment."
+            "Un site qui dit clairement ce que vous faites, pensé d'abord pour le "
+            "téléphone — là où vos clients vous cherchent."
         ),
         "bullets": [
             "Site vitrine et pages de services",
             "Rédaction et mise en page des contenus",
             "Affichage soigné sur mobile",
-            "Nom de domaine, hébergement et mise en ligne",
-            "Fiche Google : adresse, horaires, itinéraire",
+            "Nom de domaine et mise en ligne",
         ],
         "image": "service-site-web.jpg",
         "image_alt": "Site web affiché sur un écran dans un bureau sombre",
     },
     {
         "slug": "reseaux-sociaux",
-        "pole": "etre-trouve",
+        "pole": "attirer",
         "icon": "megaphone",
-        "title": "Une page qui reste vivante",
+        "title": "Vos réseaux sociaux, tenus pour vous",
         "body": (
             "Publications régulières, visuels cohérents, messages traités : votre page "
-            "continue de travailler les semaines où vous n'avez pas une minute à lui "
-            "consacrer."
+            "travaille même quand vous manquez de temps."
         ),
         "bullets": [
             "Calendrier de publication tenu",
@@ -186,25 +163,40 @@ SERVICES = [
         "image_alt": "Icônes d'applications sur un écran de smartphone",
     },
 
-    # --- Pôle : gagner du temps -----------------------------------------------
+    # --- Gagner du temps ------------------------------------------------------
+    {
+        "slug": "creation-entreprise",
+        "pole": "gagner-du-temps",
+        "icon": "building-2",
+        "title": "Votre société, prête à facturer",
+        "body": (
+            "Statuts, immatriculation, démarches fiscales et sociales : vous signez, "
+            "nous portons le dossier jusqu'au bout."
+        ),
+        "bullets": [
+            "Forme juridique adaptée à votre activité",
+            "Rédaction et dépôt des statuts",
+            "Immatriculation et enregistrements",
+            "Premières démarches fiscales accompagnées",
+        ],
+        "image": "service-creation-entreprise.jpg",
+        "image_alt": "Document de plan d'affaires posé sur un bureau",
+    },
     {
         "slug": "automatisation",
         "pole": "gagner-du-temps",
         "icon": "workflow",
-        "title": "Les tâches répétitives, faites sans vous",
+        "title": "Vos tâches répétitives, faites sans vous",
         "body": (
-            "Nous relions vos outils entre eux et confions à la machine ce que vous "
-            "refaites chaque semaine : répondre, relancer, saisir, transmettre. Chaque "
-            "automatisation est construite pour votre métier, pas achetée sur étagère."
+            "Nous confions à la machine ce que vous refaites chaque semaine : "
+            "répondre, relancer, saisir, transmettre."
         ),
         "bullets": [
-            "Réponse aux messages WhatsApp hors horaires",
-            "Relance des impayés à J+7, J+15 et J+30",
-            "Devis envoyé dans la minute après un formulaire",
-            "Facture fournisseur photographiée, ligne comptable créée",
-            "Récapitulatif du chiffre d'affaires chaque lundi matin",
+            "Réponses aux messages reçus hors horaires",
+            "Relance automatique des factures impayées",
+            "Devis envoyé dès réception d'une demande",
+            "Saisie comptable depuis une photo",
         ],
-        # Exemples détaillés, affichés en grille sous le service.
         "exemples": [
             ("message-circle", "WhatsApp hors horaires",
              "Réponse immédiate la nuit et le week-end, transfert des demandes sérieuses à l'ouverture."),
@@ -230,18 +222,16 @@ SERVICES = [
         "slug": "formations",
         "pole": "gagner-du-temps",
         "icon": "graduation-cap",
-        "title": "L'IA au service de votre cabinet",
+        "title": "Vos équipes, formées à l'IA",
         "body": (
             "Des sessions bâties sur vos propres dossiers, pas sur des exemples "
-            "théoriques. Vos équipes repartent en sachant faire, sur les tâches qui leur "
-            "prennent le plus de temps : courriers, relances, résumés de pièces."
+            "théoriques. Vos équipes repartent en sachant faire."
         ),
         "bullets": [
             "En présentiel à Rabat ou à distance",
             "Cas pratiques tirés de vos dossiers réels",
-            "Modèles prêts à l'emploi, à garder après la session",
-            "La règle de confidentialité posée par écrit",
-            "Aucun prérequis technique",
+            "Modèles prêts à l'emploi, à garder",
+            "Règle de confidentialité posée par écrit",
         ],
         "image": "service-ia.jpg",
         "image_alt": "Illustration lumineuse d'un cerveau",
