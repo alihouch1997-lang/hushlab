@@ -379,3 +379,42 @@ def test_domaine_refuse_est_journalise(client, monkeypatch, caplog):
     trace = caplog.text
     assert "hushlab.onrender.com" in trace, "le domaine refusé n'est pas journalisé"
     assert "hushlab.ma" in trace, "les domaines attendus ne sont pas rappelés"
+
+
+# --- Chargement des réglages depuis un fichier .env -------------------------
+
+def test_env_lit_le_fichier(tmp_path, monkeypatch):
+    """Les secrets vivent dans .env, pas recopiés à la main chez l'hébergeur."""
+    import config
+    fichier = tmp_path / ".env"
+    fichier.write_text('A_LIRE=valeur\n# commentaire\nAVEC_GUILLEMETS="texte"\n\n',
+                       encoding="utf-8")
+    monkeypatch.delenv("A_LIRE", raising=False)
+    monkeypatch.delenv("AVEC_GUILLEMETS", raising=False)
+    config._charger_env(fichier)
+    assert os.environ["A_LIRE"] == "valeur"
+    assert os.environ["AVEC_GUILLEMETS"] == "texte"
+
+
+def test_env_ne_remplace_pas_l_environnement(tmp_path, monkeypatch):
+    """L'hébergeur garde le dernier mot sur le fichier."""
+    import config
+    fichier = tmp_path / ".env"
+    fichier.write_text("DEJA_DEFINIE=depuis-le-fichier\n", encoding="utf-8")
+    monkeypatch.setenv("DEJA_DEFINIE", "depuis-l-hebergeur")
+    config._charger_env(fichier)
+    assert os.environ["DEJA_DEFINIE"] == "depuis-l-hebergeur"
+
+
+def test_env_absent_ne_plante_pas(tmp_path):
+    """Un projet sans .env doit démarrer normalement."""
+    import config
+    config._charger_env(tmp_path / "inexistant.env")
+
+
+def test_wsgi_pythonanywhere_ne_contient_aucun_secret():
+    """Le fichier collé dans l'interface de l'hébergeur reste anodin."""
+    contenu_wsgi = pathlib.Path("wsgi_pythonanywhere.py").read_text(encoding="utf-8")
+    for interdit in ["SECRET_KEY", "MOTDEPASSE", "SMTP_"]:
+        assert interdit not in contenu_wsgi, f"{interdit} ne doit pas figurer ici"
+    assert "from app import app as application" in contenu_wsgi

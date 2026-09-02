@@ -18,7 +18,7 @@ Le site répond alors sur http://localhost:5001.
 ## Vérifier avant chaque envoi
 
 ```bash
-.venv/bin/pytest -q          # 48 tests
+.venv/bin/pytest -q          # 53 tests
 .venv/bin/ruff check .       # conventions et motifs à risque
 .venv/bin/python build.py    # régénère les fichiers statiques
 ```
@@ -56,6 +56,17 @@ versionné : `.env` et `hushlab.db` sont exclus par `.gitignore`.
 | `HUSHLAB_HOTES` | Domaines autorisés, séparés par des virgules. Indispensable en ligne. |
 | `SMTP_*` | Notification des demandes par email. |
 
+## Diagnostic
+
+Avant de chercher dans les journaux d'un hébergeur :
+
+```bash
+python3 verifier_deploiement.py
+```
+
+Version de Python, dépendances, fichiers, droits d'écriture, réglages et
+démarrage réel de l'application — chaque contrôle indique sa correction.
+
 ## Mise en ligne
 
 `render.yaml` décrit le service : sur Render, « New + » → « Blueprint »
@@ -65,6 +76,12 @@ survivent aux mises à jour.
 
 Le site est servi par gunicorn (`Procfile`), jamais par le serveur de
 développement de Flask.
+
+Sur **PythonAnywhere** (Python 3.10 minimum, à choisir à la création de
+l'application web — cette version ne se change pas ensuite) : copier
+`wsgi_pythonanywhere.py` dans le « WSGI configuration file », n'y adapter que
+le nom d'utilisateur, et placer les secrets dans un fichier `.env` à la racine
+du projet plutôt que dans l'interface.
 
 ## Sauvegarde
 

@@ -15,6 +15,29 @@ def _booleen(nom: str, defaut: bool = False) -> bool:
     return os.environ.get(nom, str(defaut)).lower() in {"1", "true", "oui", "yes"}
 
 
+def _charger_env(fichier: Path) -> None:
+    """Charge un fichier .env dans l'environnement, s'il existe.
+
+    Évite d'avoir à écrire les secrets dans le fichier WSGI de l'hébergeur —
+    une manipulation où la moindre coquille de guillemet casse tout le site.
+    Une variable déjà définie dans l'environnement n'est jamais écrasée :
+    l'hébergeur garde toujours le dernier mot.
+    """
+    if not fichier.is_file():
+        return
+    for ligne in fichier.read_text(encoding="utf-8").splitlines():
+        ligne = ligne.strip()
+        if not ligne or ligne.startswith("#") or "=" not in ligne:
+            continue
+        cle, _, valeur = ligne.partition("=")
+        cle, valeur = cle.strip(), valeur.strip().strip("\"'")
+        if cle and cle not in os.environ:
+            os.environ[cle] = valeur
+
+
+_charger_env(RACINE / ".env")
+
+
 class Config:
     """Réglages de l'application. Instanciée une fois au démarrage."""
 

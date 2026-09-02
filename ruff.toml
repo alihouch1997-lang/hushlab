@@ -15,3 +15,5 @@ ignore = ["UP017"]
 # contenu.py ne contient que de la copie éditoriale : couper les phrases pour
 # tenir en 100 colonnes rendrait le texte plus pénible à relire qu'à écrire.
 "contenu.py" = ["E501"]
+# Le serveur WSGI consomme la variable `application` : l'import n'est pas mort.
+"wsgi_pythonanywhere.py" = ["F401"]
