@@ -7,6 +7,9 @@ target-version = "py311"
 
 [lint]
 select = ["E", "W", "F", "I", "N", "UP", "B", "SIM"]
+# UP017 remplace timezone.utc par datetime.UTC, qui exige Python 3.11.
+# Le site doit rester déployable sur des hébergements en 3.10.
+ignore = ["UP017"]
 
 [lint.per-file-ignores]
 # contenu.py ne contient que de la copie éditoriale : couper les phrases pour

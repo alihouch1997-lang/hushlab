@@ -13,7 +13,7 @@ avec formulaire et écran d'administration :
 import secrets
 import time
 from collections import defaultdict, deque
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from functools import wraps
 
 from flask import Response, abort, current_app, g, render_template, request
@@ -112,7 +112,7 @@ def verifier_csrf(audience: str = "public", *, duree_max: int = 7200,
         abort(403, description="Jeton de sécurité invalide ou expiré. Rechargez la page.")
 
     if delai_minimum:
-        age = (datetime.now(UTC) - emis_le).total_seconds()
+        age = (datetime.now(timezone.utc) - emis_le).total_seconds()
         if age < delai_minimum:
             abort(403, description="Formulaire envoyé trop vite. Réessayez.")
 

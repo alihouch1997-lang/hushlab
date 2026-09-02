@@ -14,7 +14,7 @@ import io
 import sqlite3
 from collections.abc import Iterator
 from contextlib import closing, contextmanager
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 import validation
 from config import Config
@@ -77,7 +77,7 @@ def initialiser() -> None:
 
 
 def _maintenant() -> str:
-    return datetime.now(UTC).isoformat(timespec="seconds")
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
 def en_heure_locale(horodatage: str) -> str:
